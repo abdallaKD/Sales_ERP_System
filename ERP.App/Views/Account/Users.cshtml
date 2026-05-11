@@ -1,0 +1,67 @@
+﻿@model List<ERP.Services.ViewModels.UserViewModel>
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>System Users</h4>
+    <a asp-action="CreateUser" class="btn btn-primary">+ Add User</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Job Title</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@(user.JobTitle ?? "—")</td>
+                <td><span class="badge bg-secondary">@user.Role</span></td>
+                <td>
+                    <span class="badge @(user.IsActive ? "bg-success" : "bg-danger")">
+                        @(user.IsActive ? "Active" : "Inactive")
+                    </span>
+                </td>
+                <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                    <a asp-action="changePassword" asp-route-userId="@user.Id" class="btn btn-sm btn-outline-warning">Change PW</a>
+
+                    <form asp-action="ToggleActive" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button class="btn btn-sm @(user.IsActive ? "btn-outline-secondary" : "btn-outline-success")">
+                            @(user.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </form>
+
+                    <form asp-action="DeleteUser" method="post" class="d-inline"
+                          onsubmit="return confirm('Delete this user permanently?')">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
