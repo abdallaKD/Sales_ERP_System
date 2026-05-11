@@ -14,10 +14,14 @@ namespace ERP.Services.SupplierService
         public SupplierService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
         public async Task<IEnumerable<Supplier>> GetAllSuppliersAsync()
-            => await _unitOfWork.Suppliers.GetAllAsync();
+            => await _unitOfWork.Suppliers.GetAllAsync(p => p.Purchases);
 
         public async Task<Supplier?> GetSupplierByIdAsync(int id)
-            => await _unitOfWork.Suppliers.GetByIdAsync(id);
+        {
+            var suppliers = await _unitOfWork.Suppliers.FindAsync(s => s.Id == id, new[] { "Purchases" });
+
+            return suppliers.FirstOrDefault();
+        }
 
         public async Task<bool> CreateSupplierAsync(Supplier supplier)
         {
@@ -31,6 +35,10 @@ namespace ERP.Services.SupplierService
 
         public async Task<bool> UpdateSupplierAsync(Supplier supplier)
         {
+            var duplicateEmail = await _unitOfWork.Suppliers.FindAsync(s => s.Email == supplier.Email && s.Id != supplier.Id);
+            if (duplicateEmail.Any())
+                throw new Exception("Another supplier with the same email already exists.");
+
             _unitOfWork.Suppliers.Update(supplier);
             return await _unitOfWork.CompleteAsync() > 0;
         }
@@ -42,8 +50,8 @@ namespace ERP.Services.SupplierService
 
             if (supplierData == null) return false;
 
-            if (supplierData.Purchases.Any())
-                throw new Exception("The supplier cannot be deleted because there are purchases registered in his name.");
+            if (supplierData.Purchases != null && supplierData.Purchases.Any())
+                throw new Exception("The supplier cannot be deleted because it has related purchase records.");
 
             _unitOfWork.Suppliers.Delete(supplierData);
             return await _unitOfWork.CompleteAsync() > 0;

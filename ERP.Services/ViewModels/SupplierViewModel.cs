@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ERP.Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -16,11 +17,6 @@ namespace ERP.Services.ViewModels
         [Display(Name = "Supplier Name")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Contact Person is required")]
-        [MaxLength(100)]
-        [Display(Name = "Contact Person")]
-        public string ContactPerson { get; set; } = string.Empty;
-
         [Required(ErrorMessage = "Phone number is required")]
         [Phone(ErrorMessage = "Invalid Phone Number")]
         [Display(Name = "Phone Number")]
@@ -33,8 +29,12 @@ namespace ERP.Services.ViewModels
         [MaxLength(500)]
         [Display(Name = "Address")]
         public string? Address { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-        [Display(Name = "Active Purchases")]
+        [Display(Name = "Total Purchases")]
         public int PurchasesCount { get; set; }
+
+        public IEnumerable<Purchase> Purchases { get; set; } = new List<Purchase>();
+
     }
 }
