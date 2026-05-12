@@ -3,6 +3,7 @@ using ERP.Repositories;
 using ERP.Repositories.Repository;
 using ERP.Services.CategoryService;
 using ERP.Services.LoginService;
+using ERP.Services.ProductsService;
 using ERP.Services.SupplierService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,14 @@ namespace ERP.App
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddDbContext<ERPDBContext>(optionsBuilder => {
+            builder.Services.AddDbContext<ERPDBContext>(optionsBuilder =>
+            {
                 optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
-                options => {
+                options =>
+                {
                     options.Password.RequireDigit = true;
                     options.Password.RequireLowercase = true;
                     options.Password.RequireUppercase = true;
@@ -42,6 +45,7 @@ namespace ERP.App
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISupplierService, SupplierService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
 
 

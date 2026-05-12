@@ -1,0 +1,888 @@
+﻿@* @using ERP.Services.ViewModels
+
+@model IEnumerable<ProductViewModel>
+@{
+    ViewData["Title"] = "Index";
+    int i = 1;
+}
+
+
+
+<div class="container">
+
+    <!-- Alert Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="mb-5">
+        <a class="btn btn-primary w-25 p-3 border-3" asp-action="Create">+ Add New Product</a>
+    </div>
+
+    <table class="table table-striped">
+        <tr>
+            <th>#</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Stock</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Created At</th>
+            <th>Category Name</th>
+            <th>Actions</th>
+        </tr>
+
+        @foreach(var item in Model)
+        {
+            <tr>
+                <td>@i</td>
+                <td>
+                     <img src="@item.Image" width="50" /> 
+                </td>
+                <td>@item.Name</td>
+                <td>@item.SKU</td>
+                <td>@item.StockQuantity</td>
+                <td>@item.CostPrice</td>
+                <td>@item.SellingPrice</td>
+                <td>@item.CreatedAt</td>
+                <td>@item.CategoryName</td>
+                <td >
+                    <a asp-action="Details" asp-route-id="@item.Id"
+                       class="btn btn-sm btn-outline-secondary me-1" title="Details">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@item.Id"
+                       class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            title="Delete"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal"
+                            data-id="@item.Id"
+                            data-name="@item.Name">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+
+            i++;
+        }
+
+
+</table>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                Are you sure you want to delete <strong id="categoryNameLabel"></strong>?
+                This action cannot be undone.
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (e) {
+            const btn = e.relatedTarget;
+            document.getElementById('deleteId').value = btn.dataset.id;
+            document.getElementById('categoryNameLabel').textContent = btn.dataset.name;
+        });
+    </script>
+}
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script> *@
+
+
+
+
+@using ERP.Services.ViewModels
+
+@model IEnumerable<ProductViewModel>
+@{
+    ViewData["Title"] = "Products";
+    int i = 1;
+    const int LowStockThreshold = 10;
+    const int MediumStockThreshold = 30;
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+        --bg-page: #f0f2f7;
+        --bg-card: #ffffff;
+        --border: #e2e6f0;
+        --text-primary: #1a1e2e;
+        --text-muted: #6b7394;
+        --accent: #3d5cff;
+        --accent-light: #eef0ff;
+        --danger: #ff3d5c;
+        --danger-light: #fff0f2;
+        --warning: #ff8c00;
+        --warning-light: #fff5e6;
+        --success: #00b87a;
+        --success-light: #e6faf4;
+        --radius: 10px;
+        --shadow: 0 2px 12px rgba(61,92,255,.07);
+        --shadow-hover: 0 6px 24px rgba(61,92,255,.13);
+        --mono: 'Space Mono', monospace;
+        --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+        font-family: var(--sans);
+        background: var(--bg-page);
+    }
+
+    /* ── Page shell ─────────────────────────────────── */
+    .products-page {
+        padding: 2rem 1.5rem 3rem;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .page-header__title {
+        font-size: 1.65rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -.4px;
+        margin: 0;
+    }
+
+    .page-header__sub {
+        font-size: .85rem;
+        color: var(--text-muted);
+        margin: .15rem 0 0;
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: var(--accent);
+        color: #fff;
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: .875rem;
+        padding: .625rem 1.25rem;
+        border-radius: var(--radius);
+        border: none;
+        text-decoration: none;
+        transition: background .18s, box-shadow .18s, transform .15s;
+    }
+
+        .btn-add:hover {
+            background: #2a47e8;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(61,92,255,.35);
+            transform: translateY(-1px);
+        }
+
+    /* ── Stats strip ─────────────────────────────────── */
+    .stats-strip {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        flex: 1 1 140px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: .9rem 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .stat-card__label {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .stat-card__val {
+        font-family: var(--mono);
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+
+    .stat-card--danger .stat-card__val {
+        color: var(--danger);
+    }
+
+    .stat-card--warning .stat-card__val {
+        color: var(--warning);
+    }
+
+    .stat-card--success .stat-card__val {
+        color: var(--success);
+    }
+
+    /* ── Search / filter bar ─────────────────────────── */
+    .filter-bar {
+        display: flex;
+        gap: .75rem;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1 1 260px;
+    }
+
+        .search-wrap i {
+            position: absolute;
+            left: .85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: .9rem;
+            pointer-events: none;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: .55rem .75rem .55rem 2.25rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-family: var(--sans);
+        font-size: .875rem;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        transition: border-color .18s, box-shadow .18s;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(61,92,255,.12);
+        }
+
+    .filter-select {
+        padding: .55rem .9rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-family: var(--sans);
+        font-size: .875rem;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: border-color .18s;
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+    /* ── Table card ──────────────────────────────────── */
+    .table-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+        .table-card table {
+            margin: 0;
+            font-size: .875rem;
+        }
+
+        .table-card thead th {
+            background: #f7f8fc;
+            color: var(--text-muted);
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            border-bottom: 1px solid var(--border);
+            padding: .85rem 1rem;
+            white-space: nowrap;
+        }
+
+        .table-card tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+
+            .table-card tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .table-card tbody tr:hover {
+                background: #f7f8fc;
+            }
+
+        .table-card tbody td {
+            padding: .8rem 1rem;
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+    /* ── Row number ──────────────────────────────────── */
+    .row-num {
+        font-family: var(--mono);
+        font-size: .75rem;
+        color: var(--text-muted);
+    }
+
+    /* ── Product image ───────────────────────────────── */
+    .product-img {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-page);
+    }
+
+    .product-img-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-page);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    /* ── Product name ────────────────────────────────── */
+    .product-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .product-sku {
+        font-family: var(--mono);
+        font-size: .72rem;
+        color: var(--text-muted);
+        margin-top: .15rem;
+    }
+
+    /* ── Price ───────────────────────────────────────── */
+    .price {
+        font-family: var(--mono);
+        font-size: .875rem;
+        color: var(--text-primary);
+    }
+
+    .price--selling {
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    /* ── Category badge ──────────────────────────────── */
+    .badge-cat {
+        display: inline-block;
+        padding: .2rem .65rem;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+        background: var(--accent-light);
+        color: var(--accent);
+        letter-spacing: .2px;
+    }
+
+    /* ── Date ────────────────────────────────────────── */
+    .date-text {
+        font-size: .8rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    /* ── Stock badge ─────────────────────────────────── */
+    .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .3rem .7rem;
+        border-radius: 20px;
+        font-size: .78rem;
+        font-weight: 700;
+        font-family: var(--mono);
+        white-space: nowrap;
+    }
+
+        .stock-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+    .stock-badge--out {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+        .stock-badge--out .dot {
+            background: var(--danger);
+        }
+
+    .stock-badge--low {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+        .stock-badge--low .dot {
+            background: var(--warning);
+        }
+
+    .stock-badge--medium {
+        background: #fffbea;
+        color: #b07d00;
+    }
+
+        .stock-badge--medium .dot {
+            background: #e6b800;
+        }
+
+    .stock-badge--good {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+        .stock-badge--good .dot {
+            background: var(--success);
+        }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: .5;
+            transform: scale(.7);
+        }
+    }
+
+    /* stock tooltip hint */
+    .stock-col {
+        white-space: nowrap;
+    }
+
+    .stock-hint {
+        display: block;
+        font-size: .68rem;
+        color: var(--text-muted);
+        font-family: var(--sans);
+        font-weight: 400;
+        margin-top: .15rem;
+        letter-spacing: 0;
+    }
+
+    /* ── Action buttons ──────────────────────────────── */
+    .action-btns {
+        display: flex;
+        gap: .35rem;
+    }
+
+        .action-btns .btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-size: .8rem;
+            transition: background .15s, color .15s, border-color .15s, transform .12s;
+        }
+
+            .action-btns .btn:hover {
+                transform: translateY(-1px);
+            }
+
+    /* ── Alerts ──────────────────────────────────────── */
+    .alert {
+        border: none;
+        border-radius: var(--radius);
+        font-size: .875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    /* ── Modal ───────────────────────────────────────── */
+    .modal-content {
+        border-radius: 14px;
+    }
+
+    .modal-header {
+        padding: 1.25rem 1.5rem .75rem;
+    }
+
+    .modal-body {
+        padding: .5rem 1.5rem 1rem;
+        font-size: .9rem;
+    }
+
+    .modal-footer {
+        padding: .75rem 1.5rem 1.25rem;
+    }
+
+    /* ── Empty state ─────────────────────────────────── */
+    .empty-state {
+        text-align: center;
+        padding: 3.5rem 1rem;
+        color: var(--text-muted);
+    }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: .75rem;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: .9rem;
+        }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @@media (max-width: 768px) {
+        .hide-sm {
+            display: none !important;
+        }
+
+        .table-card {
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<div class="products-page">
+
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-header__title">Products</h1>
+            <p class="page-header__sub">@Model.Count() total products in inventory</p>
+        </div>
+        <a class="btn-add" asp-action="Create">
+            <i class="bi bi-plus-lg"></i> Add New Product
+        </a>
+    </div>
+
+    <!-- Stats Strip -->
+    @{
+        var total = Model.Count();
+        var outOfStock = Model.Count(p => p.StockQuantity == 0);
+        var lowStock = Model.Count(p => p.StockQuantity > 0 && p.StockQuantity <= LowStockThreshold);
+        var goodStock = Model.Count(p => p.StockQuantity > MediumStockThreshold);
+    }
+    <div class="stats-strip">
+        <div class="stat-card">
+            <span class="stat-card__label">Total Products</span>
+            <span class="stat-card__val">@total</span>
+        </div>
+        <div class="stat-card stat-card--danger">
+            <span class="stat-card__label">Out of Stock</span>
+            <span class="stat-card__val">@outOfStock</span>
+        </div>
+        <div class="stat-card stat-card--warning">
+            <span class="stat-card__label">Low Stock (≤ @LowStockThreshold)</span>
+            <span class="stat-card__val">@lowStock</span>
+        </div>
+        <div class="stat-card stat-card--success">
+            <span class="stat-card__label">Well Stocked (> @MediumStockThreshold)</span>
+            <span class="stat-card__val">@goodStock</span>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by name, SKU or category…" />
+        </div>
+        <select id="stockFilter" class="filter-select">
+            <option value="all">All Stock Levels</option>
+            <option value="out">Out of Stock</option>
+            <option value="low">Low Stock</option>
+            <option value="medium">Medium Stock</option>
+            <option value="good">Well Stocked</option>
+        </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table class="table" id="productsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th class="hide-sm">Cost Price</th>
+                    <th>Selling Price</th>
+                    <th>Stock</th>
+                    <th class="hide-sm">Category</th>
+                    <th class="hide-sm">Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    /* ── Determine stock level ── */
+                    string stockClass, stockLabel, stockIcon;
+                    if (item.StockQuantity == 0)
+                    {
+                        stockClass = "stock-badge--out";
+                        stockLabel = "Out of Stock";
+                        stockIcon = "bi-x-circle-fill";
+                    }
+                    else if (item.StockQuantity <= LowStockThreshold)
+                    {
+                        stockClass = "stock-badge--low";
+                        stockLabel = "Low Stock";
+                        stockIcon = "bi-exclamation-circle-fill";
+                    }
+                    else if (item.StockQuantity <= MediumStockThreshold)
+                    {
+                        stockClass = "stock-badge--medium";
+                        stockLabel = "Medium";
+                        stockIcon = "bi-dash-circle-fill";
+                    }
+                    else
+                    {
+                        stockClass = "stock-badge--good";
+                        stockLabel = "Good Stock";
+                        stockIcon = "bi-check-circle-fill";
+                    }
+
+                    <tr data-name="@item.Name.ToLower()"
+                        data-sku="@item.SKU?.ToLower()"
+                        data-category="@item.CategoryName?.ToLower()"
+                        data-stock-level="@(item.StockQuantity == 0 ? "out" : item.StockQuantity <= LowStockThreshold ? "low" : item.StockQuantity <= MediumStockThreshold ? "medium" : "good")">
+
+                        <td><span class="row-num">@i</span></td>
+
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.Image))
+                            {
+                                <img src="@item.Image" class="product-img" alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <div class="product-img-placeholder"><i class="bi bi-image"></i></div>
+                            }
+                        </td>
+
+                        <td>
+                            <div class="product-name">@item.Name</div>
+                            <div class="product-sku">@item.SKU</div>
+                        </td>
+
+                        <td class="hide-sm">
+                            <span class="price">@item.CostPrice.ToString("C")</span>
+                        </td>
+
+                        <td>
+                            <span class="price price--selling">@item.SellingPrice.ToString("C")</span>
+                        </td>
+
+                        <td class="stock-col">
+                            <span class="stock-badge @stockClass">
+                                <span class="dot"></span>
+                                @item.StockQuantity
+                            </span>
+                            <span class="stock-hint">@stockLabel</span>
+                        </td>
+
+                        <td class="hide-sm">
+                            <span class="badge-cat">@item.CategoryName</span>
+                        </td>
+
+                        <td class="hide-sm">
+                            <span class="date-text">@item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        </td>
+
+                        <td>
+                            <div class="action-btns">
+                                <a asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-secondary" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Delete"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal"
+                                        data-id="@item.Id"
+                                        data-name="@item.Name">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+
+        <!-- Empty state (shown via JS when no results match filter) -->
+        <div id="emptyState" class="empty-state" style="display:none;">
+            <i class="bi bi-box-seam d-block"></i>
+            <p>No products match your search or filter.</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- ── Delete Confirmation Modal ─────────────────────────────── -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                Are you sure you want to delete <strong id="productNameLabel"></strong>?
+                <br><small class="text-muted">This action cannot be undone.</small>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        /* ── Delete modal ───────────────────────────────── */
+        document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
+            const btn = e.relatedTarget;
+            document.getElementById('deleteId').value       = btn.dataset.id;
+            document.getElementById('productNameLabel').textContent = btn.dataset.name;
+        });
+
+        /* ── Live search + stock filter ─────────────────── */
+        const searchInput  = document.getElementById('searchInput');
+        const stockFilter  = document.getElementById('stockFilter');
+        const rows         = document.querySelectorAll('#productsTable tbody tr');
+        const emptyState   = document.getElementById('emptyState');
+
+        function applyFilters() {
+            const q     = searchInput.value.toLowerCase().trim();
+            const level = stockFilter.value;
+            let visible = 0;
+
+            rows.forEach(row => {
+                const name     = row.dataset.name     || '';
+                const sku      = row.dataset.sku      || '';
+                const category = row.dataset.category || '';
+                const stockLvl = row.dataset.stockLevel;
+
+                const matchesSearch = !q || name.includes(q) || sku.includes(q) || category.includes(q);
+                const matchesLevel  = level === 'all' || stockLvl === level;
+
+                if (matchesSearch && matchesLevel) {
+                    row.style.display = '';
+                    visible++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            emptyState.style.display = visible === 0 ? 'block' : 'none';
+        }
+
+        searchInput.addEventListener('input',  applyFilters);
+        stockFilter.addEventListener('change', applyFilters);
+    </script>
+}
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>

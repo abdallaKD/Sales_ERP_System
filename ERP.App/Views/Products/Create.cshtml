@@ -1,0 +1,89 @@
+﻿@using ERP.Services.ViewModels
+
+@model ProductViewModel
+@{
+    ViewData["Title"] = "Create";
+}
+
+
+<div class="container">
+
+    <div asp-val></div>
+
+
+    <div asp-validation-summary="All" class="text-bg-danger"></div>
+    <!-- Error Alert -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-semibold"></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. HP Monitor" autofocus />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SKU" class="form-label fw-semibold"></label>
+                    <input asp-for="SKU" class="form-control"  autofocus />
+                    <span asp-validation-for="SKU" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="StockQuantity" class="form-label fw-semibold"></label>
+                    <input asp-for="StockQuantity" class="form-control" autofocus />
+                    <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CostPrice" class="form-label fw-semibold"></label>
+                    <input asp-for="CostPrice" class="form-control" autofocus />
+                    <span asp-validation-for="CostPrice" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SellingPrice" class="form-label fw-semibold"></label>
+                    <input asp-for="SellingPrice" class="form-control" autofocus />
+                    <span asp-validation-for="SellingPrice" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CategoryId" class="form-label fw-semibold"></label>
+                    <select class="search-select" asp-for="CategoryId" asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                        <option value="">Choose category...</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Upload New Picture</label>
+                    <input type="file" class="form-control form-control-lg" name="Image" id="Image"
+                           accept="image/*">
+                    <small class="form-text text-muted d-block mt-2">
+                        <i class="bi bi-info-circle"></i> Leave empty to keep current image
+                    </small>
+                </div>
+
+                <button type="submit">Submit</button>
+
+
+        
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
