@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.App.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class SuppliersController : Controller
     {
         private readonly ISupplierService _supplierService;

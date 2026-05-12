@@ -1,0 +1,97 @@
+﻿@model ERP.Services.ViewModels.ProductViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>ProductViewModel</h4>
+<hr />
+
+<!-- Error Alert -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            
+            <div class="form-group">
+                <label asp-for="Id" class="control-label"></label>
+                <input asp-for="Id" class="form-control" readonly />
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Image" class="control-label"></label>
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.Image" alt="Product Image" style="max-width: 150px; max-height: 150px;" />
+                        <p class="small text-muted">Current Image</p>
+                    </div>
+                }
+                <input type="file" name="Image" class="form-control" accept="image/*" />
+                <small class="form-text text-muted">Leave empty to keep current image</small>
+                <span asp-validation-for="Image" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="SKU" class="control-label"></label>
+                <input asp-for="SKU" class="form-control" />
+                <span asp-validation-for="SKU" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="StockQuantity" class="control-label"></label>
+                <input asp-for="StockQuantity" class="form-control" />
+                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="CostPrice" class="control-label"></label>
+                <input asp-for="CostPrice" class="form-control" />
+                <span asp-validation-for="CostPrice" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="SellingPrice" class="control-label"></label>
+                <input asp-for="SellingPrice" class="form-control" />
+                <span asp-validation-for="SellingPrice" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="CategoryId" class="control-label"></label>
+                <select class="form-control" asp-for="CategoryId" asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                    <option value="">-- Select a Category --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
