@@ -2,6 +2,7 @@ using ERP.Domain.Models;
 using ERP.Repositories;
 using ERP.Repositories.Repository;
 using ERP.Services.CategoryService;
+using ERP.Services.CustomerService;
 using ERP.Services.LoginService;
 using ERP.Services.ProductsService;
 using ERP.Services.SupplierService;
@@ -46,7 +47,7 @@ namespace ERP.App
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISupplierService, SupplierService>();
             builder.Services.AddScoped<IProductService, ProductService>();
-
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 
             var app = builder.Build();
