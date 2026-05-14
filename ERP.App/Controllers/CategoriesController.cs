@@ -16,11 +16,46 @@ namespace ERP.App.Controllers
             _categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()
+        //{
+        //    var categories = await _categoryService.GetAllCategoriesAsync();
+
+        //    var viewModel = categories.Select(c => new CategoryViewModel
+        //    {
+        //        Id = c.Id,
+        //        Name = c.Name,
+        //        Description = c.Description,
+        //        ProductsCount = c.Products?.Count ?? 0,
+        //        CreatedAt = c.CreatedAt
+        //    }).ToList();
+
+        //    return View("Index", viewModel);
+        //}
+
+        // Enhanced Index action with Search and Pagination ===> updated
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
 
-            var viewModel = categories.Select(c => new CategoryViewModel
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                categories = categories.Where(c =>
+                    c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            int pageSize = 10; 
+            int totalItems = categories.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var pagedCategories = categories
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var viewModel = pagedCategories.Select(c => new CategoryViewModel
             {
                 Id = c.Id,
                 Name = c.Name,
@@ -29,8 +64,14 @@ namespace ERP.App.Controllers
                 CreatedAt = c.CreatedAt
             }).ToList();
 
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
             return View("Index", viewModel);
         }
+
 
         public async Task<IActionResult> Details(int id)
         {

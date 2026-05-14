@@ -16,11 +16,51 @@ namespace ERP.App.Controllers
             _supplierService = supplierService;
         }
 
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()
+        //{
+        //    var suppliers = await _supplierService.GetAllSuppliersAsync();
+
+        //    var viewModel = suppliers.Select(s => new SupplierViewModel
+        //    {
+        //        Id = s.Id,
+        //        Name = s.Name,
+        //        Phone = s.Phone,
+        //        Email = s.Email,
+        //        PurchasesCount = s.Purchases?.Count ?? 0,
+        //        CreatedAt = s.CreatedAt
+        //    }).ToList();
+
+        //    return View("Index", viewModel);
+        //}
+
+
+        // Enhanced Index action with Search and Pagination ===> updated
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
             var suppliers = await _supplierService.GetAllSuppliersAsync();
 
-            var viewModel = suppliers.Select(s => new SupplierViewModel
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                suppliers = suppliers.Where(s =>
+                    s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    (s.Phone != null && s.Phone.Contains(searchString)) ||
+                    (s.Email != null && s.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            int pageSize = 10;
+            int totalItems = suppliers.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var pagedSuppliers = suppliers
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var viewModel = pagedSuppliers.Select(s => new SupplierViewModel
             {
                 Id = s.Id,
                 Name = s.Name,
@@ -29,6 +69,11 @@ namespace ERP.App.Controllers
                 PurchasesCount = s.Purchases?.Count ?? 0,
                 CreatedAt = s.CreatedAt
             }).ToList();
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
 
             return View("Index", viewModel);
         }
