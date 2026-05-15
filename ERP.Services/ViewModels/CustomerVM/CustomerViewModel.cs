@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ERP.Services.ViewModels
+namespace ERP.Services.ViewModels.CustomerVM
 {
     public class CustomerViewModel
     {

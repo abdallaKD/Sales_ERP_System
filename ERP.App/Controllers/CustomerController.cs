@@ -1,9 +1,10 @@
 ﻿using ERP.Domain.Models;
 using ERP.Services.CategoryService;
 using ERP.Services.CustomerService;
-using ERP.Services.ViewModels;
+using ERP.Services.ViewModels.CustomerVM;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace ERP.App.Controllers
 {
@@ -80,26 +81,17 @@ namespace ERP.App.Controllers
 
         #region Details
 
-        [HttpGet]
+        // GET: /Customer/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var customer = await _customerService.GetCustomerByIdAsync(id);
-            if (customer == null)
+            var viewModel = await _customerService.GetCustomerDetailsAsync(id);
+            if (viewModel == null)
             {
-                TempData["Error"] = "Customers not found!";
+                TempData["Error"] = "Customer not found!";
                 return RedirectToAction(nameof(Index));
             }
-
-            var viewModel = new CustomerViewModel
-            {
-                Id = customer.Id,
-                Name = customer.Name,
-                Email = customer.Email,
-                Phone = customer.Phone,
-                Address = customer.Address,
-            };
-
-            return View("Details", viewModel);
+            // CustomerDetailsViewModel
+            return View(viewModel);
         }
 
         #endregion
@@ -202,6 +194,7 @@ namespace ERP.App.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+
         }
 
         #endregion

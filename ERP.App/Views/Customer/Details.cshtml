@@ -1,48 +1,122 @@
-﻿@model ERP.Services.ViewModels.CustomerViewModel
+﻿@using ERP.Services.ViewModels.CustomerVM
+@using ERP.Services.ViewModels.OrderVM
+@using ERP.Domain.Enums  
+@model CustomerDetailsViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Customer Details";
 }
 
-<h1>Details</h1>
+<h2>Customer Details</h2>
 
-<div>
-    <h4>CustomerViewModel</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Id)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-    </dl>
+<!-- بيانات الكاستمر -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>@Model.Name</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-2">Email</dt>
+            <dd class="col-sm-10">@Model.Email</dd>
+
+            <dt class="col-sm-2">Phone</dt>
+            <dd class="col-sm-10">@Model.Phone</dd>
+
+            <dt class="col-sm-2">Address</dt>
+            <dd class="col-sm-10">@Model.Address</dd>
+        </dl>
+    </div>
 </div>
+
+<!-- Orders -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Orders</h5>
+    </div>
+    <div class="card-body">
+        @if (!Model.Orders.Any())
+        {
+            <p class="text-muted">No orders found.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Total Amount</th>
+                        <th>Remaining Amount</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>@order.Id</td>
+                            <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                            <td>@order.TotalAmount.ToString("C")</td>
+                            <td>@order.RemainingAmount.ToString("C")</td>
+                            <td>
+                                <span class="badge @(order.Status switch {
+                            OrderStatus.Pending => "bg-warning",
+                            OrderStatus.Completed => "bg-success",
+                            OrderStatus.Cancelled => "bg-danger",
+                             _ => "bg-secondary"
+                                               })">
+                                    @order.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-controller="Order" asp-route-id="@order.Id">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Payments -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Payments</h5>
+    </div>
+    <div class="card-body">
+        @if (!Model.Payments.Any())
+        {
+            <p class="text-muted">No payments found.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var payment in Model.Payments)
+                    {
+                        <tr>
+                            <td>@payment.Id</td>
+                            <td>@payment.Amount.ToString("C")</td>
+                            <td>@payment.PaymentDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Actions -->
 <div>
-    <a asp-action="Edit"asp-controller="Customer">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" asp-controller="Customer" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" asp-controller="Customer" class="btn btn-secondary">Back to List</a>
 </div>
