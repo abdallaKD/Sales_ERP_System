@@ -8,6 +8,7 @@ using ERP.Services.SupplierService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Principal;
+using ERP.Services.PurchaseService;
 
 namespace ERP.App
 {
@@ -46,6 +47,7 @@ namespace ERP.App
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISupplierService, SupplierService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
 
 
