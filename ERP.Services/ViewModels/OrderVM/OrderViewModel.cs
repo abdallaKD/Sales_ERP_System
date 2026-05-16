@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ERP.Domain.Enums;
 
 namespace ERP.Services.ViewModels.OrderVM
 {
@@ -12,7 +13,7 @@ namespace ERP.Services.ViewModels.OrderVM
     {
         [Key]
         public int Id { get; set; }
-
+        public string CustomerName { get; set; }
 
         [Required]
         [Display(Name = "Order Date")]
@@ -30,6 +31,10 @@ namespace ERP.Services.ViewModels.OrderVM
         [Display(Name = "Paid Amount")]
         [Range(0, double.MaxValue)]
         public decimal PaidAmount { get; set; }
+
+        public OrderStatus Status { get; set; }
+        public decimal RemainingAmount { get; set; }  // add this
+
 
     }
 }

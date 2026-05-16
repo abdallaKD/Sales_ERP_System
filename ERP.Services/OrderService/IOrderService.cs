@@ -10,11 +10,18 @@ namespace ERP.Services.OrderService
 {
     public interface IOrderService
     {
-        Task<IEnumerable<Order>> GetAllOrdersAsync();
-        Task<Order> GetOrderByIdAsync(int id);
-        Task<OrderViewModel> GetOrdersByCustomerIdAsync(int customerId);
-        Task CreateOrderAsync(Order model);
-        Task EditOrderAsync(Order model);
-        Task CancelOrderAsync(int orderId);
+        Task<IEnumerable<OrderViewModel>> GetAllOrdersAsync(); 
+
+        // Details
+        Task<OrderDetailsViewModel?> GetOrderDetailsAsync(int id);
+
+        // Create
+        Task CreateOrderAsync(OrderDetailsViewModel model , string userId);
+
+        // Edit
+        Task UpdateOrderAsync(OrderDetailsViewModel model);
+
+        // cancel
+        Task CancelOrderAsync(int id);
     }
 }

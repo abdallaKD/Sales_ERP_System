@@ -10,9 +10,9 @@ namespace ERP.Services.ViewModels.OrderVM
     public class OrderItemFormViewModel
     {
         public int ProductId { get; set; }
-        public string? ProductName { get; set; }
-        public int Quantity { get; set; }
+        public string ProductName { get; set; } = "";
+        public int Quantity { get; set; } = 1;
         public decimal UnitPrice { get; set; }
-        public decimal LineTotal { get; set; }
+        public decimal TotalPrice => Quantity * UnitPrice;
     }
 }

@@ -27,7 +27,7 @@ namespace ERP.Services.ProductsService
 
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            return await unitOfWork.Products.GetAllAsync(p => p.Id);
+            return await unitOfWork.Products.GetAllAsync();
         }
 
         public async Task<Product?> GetProductByIdAsync(int id)

@@ -1,0 +1,77 @@
+﻿@model OrderDetailsViewModel
+@{
+    ViewData["Title"] = $"Edit Order #{Model.OrderId}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Edit Order #@Model.OrderId</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back</a>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.OrderId" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="OrderId" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="card mb-3">
+        <div class="card-header">Order Info</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="CustomerId" class="form-label">Customer</label>
+                <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select">
+                    <option value="">-- Select customer --</option>
+                </select>
+                <span asp-validation-for="CustomerId" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Items</div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th style="width:130px">Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var currentProductId = Model.Items[i].ProductId;
+                        var currentQty = Model.Items[i].Quantity;
+
+                        <tr>
+                            <td>
+                                <select name="Items[@i].ProductId" class="form-select">
+                                    <option value="">-- Select product --</option>
+                                    @foreach (var p in Model.Products)
+                                    {
+                                        if (p.Value == currentProductId.ToString())
+                                        {
+                                            <option value="@p.Value" selected>@p.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@p.Value">@p.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="Items[@i].Quantity"
+                                       class="form-control" value="@currentQty" min="1" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <small class="text-muted">Leave unused rows blank — they will be ignored.</small>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Order</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

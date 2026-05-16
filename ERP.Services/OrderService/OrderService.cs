@@ -1,79 +1,235 @@
-﻿using ERP.Domain.Models;
+﻿using ERP.Domain.Enums;
+using ERP.Domain.Models;
 using ERP.Repositories.Repository;
 using ERP.Services.ViewModels.OrderVM;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERP.Services.OrderService
 {
     public class OrderService : IOrderService
-
     {
         private readonly IUnitOfWork _unitOfWork;
         public OrderService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
-
-
-        public async  Task<IEnumerable<Order>> GetAllOrdersAsync()
+        // Index
+        public async Task<IEnumerable<OrderViewModel>> GetAllOrdersAsync()
         {
+            // جرب بدون أي Include أول شيء
+            var orders = await _unitOfWork.Orders.GetAllAsync();
 
-            return await _unitOfWork.Orders.GetAllAsync();
+            var customerIds = orders.Select(o => o.CustomerId).Distinct().ToList();
+            var customers = await _unitOfWork.Customers
+                                  .FindAsync(c => customerIds.Contains(c.Id));
+            var customerDict = customers.ToDictionary(c => c.Id);
+
+            return orders.Select(o =>
+            {
+                customerDict.TryGetValue(o.CustomerId, out var customer);
+                return new OrderViewModel
+                {
+                    Id = o.Id,
+                    CustomerName = customer?.Name ?? "Unknown",
+                    OrderDate = o.OrderDate,
+                    Status = o.Status,
+                    TotalAmount = o.TotalAmount,
+                    PaidAmount = o.PaidAmount,
+                    //RemainingAmount = o.RemainingAmount
+                };
+            });
+        }
+
+       
+
+        // ── DETAILS ────────────────────────────────────────────
+        public async Task<OrderDetailsViewModel?> GetOrderDetailsAsync(int id)
+        {
+            var order = await _unitOfWork.Orders.GetByIdAsync(id);
+            if (order == null) return null;
+
+            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
+            var items = await _unitOfWork.OrderItems.FindAsync(oi => oi.OrderId == id);
+
+            var itemList = new List<OrderItemFormViewModel>();
+
+            if (items != null && items.Any())
+            {
+                var productIds = items.Select(i => i.ProductId).Distinct().ToList();
+                var products = await _unitOfWork.Products.FindAsync(p => productIds.Contains(p.Id));
+                var productDict = products.ToDictionary(p => p.Id);
+
+                itemList = items.Select(oi =>
+                {
+                    productDict.TryGetValue(oi.ProductId, out var product);
+                    return new OrderItemFormViewModel
+                    {
+                        ProductId = oi.ProductId,
+                        ProductName = product?.Name ?? "Unknown",
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPrice,
+                    };
+                }).ToList();
+            }
+
+            return new OrderDetailsViewModel
+            {
+                OrderId = order.Id,
+                CustomerId = order.CustomerId,
+                CustomerName = customer?.Name ?? "Unknown",
+                OrderDate = order.OrderDate,
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+                PaidAmount = order.PaidAmount,
+                RemainingAmount = order.RemainingAmount,
+                Items = itemList
+            };
         }
 
 
-        public  async Task<Order> GetOrderByIdAsync(int id)
+        // ── CREATE ─────────────────────────────────────────────
+        public async Task CreateOrderAsync(OrderDetailsViewModel model, string userId)
         {
-            return await _unitOfWork.Orders.GetByIdAsync(id);
+            if (model.Items == null || !model.Items.Any())
+                throw new Exception("Cannot create an order with no items.");
+
+            var order = new Order
+            {
+                CustomerId = model.CustomerId,
+                OrderDate = DateTime.Now,
+                Status = OrderStatus.Pending,
+                CreatedByUserId = userId
+            };
+
+            await _unitOfWork.Orders.AddAsync(order);
+
+            decimal total = 0;
+
+            foreach (var item in model.Items)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId)
+                    ?? throw new Exception($"Product {item.ProductId} not found.");
+
+                if (product.StockQuantity < item.Quantity)
+                    throw new Exception($"Not enough stock for: {product.Name}. Available: {product.StockQuantity}");
+
+                product.StockQuantity -= item.Quantity;
+                _unitOfWork.Products.Update(product);
+
+                await _unitOfWork.OrderItems.AddAsync(new OrderItem
+                {
+                    Order = order,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.SellingPrice
+                });
+
+                total += item.Quantity * product.SellingPrice;
+            }
+
+            order.TotalAmount = total;
+
+            await _unitOfWork.CompleteAsync();
         }
 
 
 
-        public Task CancelOrderAsync(int orderId)
+
+        // ── UPDATE ─────────────────────────────────────────────
+        public async Task UpdateOrderAsync(OrderDetailsViewModel model)
         {
-            throw new NotImplementedException();
+            var order = await _unitOfWork.Orders.GetByIdAsync(model.OrderId)
+                ?? throw new Exception($"Order {model.OrderId} not found.");
+
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Cannot edit a cancelled order.");
+
+            if (model.Items == null || !model.Items.Any())
+                throw new Exception("Cannot update an order with no items.");
+
+            // 1. Restore old stock and remove old items
+            var oldItems = await _unitOfWork.OrderItems.FindAsync(oi => oi.OrderId == order.Id);
+
+            foreach (var old in oldItems)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(old.ProductId);
+                if (product != null)
+                {
+                    product.StockQuantity += old.Quantity;
+                    _unitOfWork.Products.Update(product);
+                }
+                _unitOfWork.OrderItems.Delete(old);
+            }
+
+            // 2. Add new items and deduct stock
+            decimal total = 0;
+
+            foreach (var item in model.Items)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId)
+                    ?? throw new Exception($"Product {item.ProductId} not found.");
+
+                if (product.StockQuantity < item.Quantity)
+                    throw new Exception($"Not enough stock for: {product.Name}. Available: {product.StockQuantity}");
+
+                product.StockQuantity -= item.Quantity;
+                _unitOfWork.Products.Update(product);
+
+                await _unitOfWork.OrderItems.AddAsync(new OrderItem
+                {
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.SellingPrice
+                });
+
+                total += item.Quantity * product.SellingPrice;
+            }
+
+            // 3. Update the order — no UpdatedByUserId since model is fixed
+            order.TotalAmount = total;
+            order.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.Orders.Update(order);
+
+            await _unitOfWork.CompleteAsync();
         }
 
-        public Task CreateOrderAsync(Order model)
+
+
+        // ── CANCEL ─────────────────────────────────────────────
+        public async Task CancelOrderAsync(int id)
         {
-            throw new NotImplementedException();
+            var order = await _unitOfWork.Orders.GetByIdAsync(id)
+                ?? throw new Exception($"Order {id} not found.");
+
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Order is already cancelled.");
+
+            if (order.PaidAmount > 0)
+                throw new Exception("Cannot cancel an order with payments. Please process a refund first.");
+
+            var items = await _unitOfWork.OrderItems.FindAsync(oi => oi.OrderId == id);
+
+            foreach (var item in items)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.StockQuantity += item.Quantity;
+                    _unitOfWork.Products.Update(product);
+                }
+            }
+
+            order.Status = OrderStatus.Cancelled;
+            order.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.Orders.Update(order);
+
+            await _unitOfWork.CompleteAsync();
         }
 
-        public Task EditOrderAsync(Order model)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderViewModel> GetOrdersByCustomerIdAsync(int customerId)
-        {
-            throw new NotImplementedException();
-        }
 
 
 
 
 
-        //public Task<OrderViewModel> GetOrdersByCustomerIdAsync(int customerId)
-        //{
-        //    var orders = await _unitOfWork.Orders.FindAsync(o => o.CustomerId == customerId);
-        //    return orders.Select(o => new OrderDetailsViewModel
-        //    {
-        //        OrderId = o.Id,
-        //        CustomerName = o.Customer.Name,
-        //        OrderDate = o.OrderDate,
-        //        Status = o.Status,
-        //        TotalAmount = o.TotalAmount,
-        //        RemainingAmount = o.RemainingAmount,
-        //        Items = o.OrderItems.Select(oi => new OrderItemDetailsViewModel
-        //        {
-        //            ProductName = oi.Product.Name,
-        //            Quantity = oi.Quantity,
-        //            UnitPrice = oi.UnitPrice,
-        //            LineTotal = oi.LineTotal
-        //        }).ToList()
-        //    });
-        //}
     }
 }
