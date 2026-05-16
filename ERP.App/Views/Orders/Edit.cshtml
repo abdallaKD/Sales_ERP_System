@@ -12,23 +12,46 @@
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="OrderId" />
 
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
 
     <div class="card mb-3">
         <div class="card-header">Order Info</div>
         <div class="card-body">
             <div class="mb-3">
-                <label asp-for="CustomerId" class="form-label">Customer</label>
-                <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select">
-                    <option value="">-- Select customer --</option>
+                <label class="form-label">Customer</label>
+                <select name="CustomerId" class="form-select">
+                    <option value="0">-- Select customer --</option>
+                    @foreach (var c in Model.Customers!)
+                    {
+                        if (c.Value == Model.CustomerId.ToString())
+                        {
+                            <option value="@c.Value" selected>@c.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@c.Value">@c.Text</option>
+                        }
+                    }
                 </select>
-                <span asp-validation-for="CustomerId" class="text-danger"></span>
             </div>
         </div>
     </div>
 
     <div class="card mb-3">
-        <div class="card-header">Items</div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Items</span>
+          
+        </div>
         <div class="card-body">
             <table class="table">
                 <thead>
@@ -46,8 +69,8 @@
                         <tr>
                             <td>
                                 <select name="Items[@i].ProductId" class="form-select">
-                                    <option value="">-- Select product --</option>
-                                    @foreach (var p in Model.Products)
+                                    <option value="0">-- Select product --</option>
+                                    @foreach (var p in Model.Products!)
                                     {
                                         if (p.Value == currentProductId.ToString())
                                         {
@@ -62,7 +85,8 @@
                             </td>
                             <td>
                                 <input type="number" name="Items[@i].Quantity"
-                                       class="form-control" value="@currentQty" min="1" />
+                                       class="form-control"
+                                       value="@currentQty" min="1" />
                             </td>
                         </tr>
                     }

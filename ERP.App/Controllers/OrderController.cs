@@ -19,6 +19,24 @@ namespace ERP.Web.Controllers
             _orderService = orderService;
             _unitOfWork = unitOfWork;
         }
+        #region help action
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddRow(OrderDetailsViewModel model)
+        {
+            model.Items ??= new List<OrderItemFormViewModel>();
+            model.Items.Add(new OrderItemFormViewModel());
+
+            await BuildFormViewModel(model);
+
+            return View("Create", model);
+        }
+
+        #endregion
+
+
+
+
 
         // ── INDEX ──────────────────────────────────────────
         public async Task<IActionResult> Index()
@@ -45,14 +63,7 @@ namespace ERP.Web.Controllers
             };
             return View(await BuildFormViewModel(model));
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddRow(OrderDetailsViewModel model)
-        {
-            model.Items ??= new List<OrderItemFormViewModel>();
-            model.Items.Add(new OrderItemFormViewModel());
-            return View("Create", await BuildFormViewModel(model));
-        }
+       
         // ── CREATE POST ────────────────────────────────────
 
         [HttpPost]
@@ -90,19 +101,15 @@ namespace ERP.Web.Controllers
 
 
 
-
         // ── EDIT GET ───────────────────────────────────────
         public async Task<IActionResult> Edit(int id)
         {
             var model = await _orderService.GetOrderDetailsAsync(id);
             if (model == null) return NotFound();
-
-            while (model.Items.Count < 5)
-                model.Items.Add(new OrderItemFormViewModel());
-
             return View(await BuildFormViewModel(model));
         }
 
+       
         // ── EDIT POST ──────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
