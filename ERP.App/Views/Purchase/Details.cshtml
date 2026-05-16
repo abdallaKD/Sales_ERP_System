@@ -1,0 +1,111 @@
+﻿@using ERP.Domain.Models
+@using ERP.Services.ViewModels
+
+@model PurchaseViewModel
+@{
+    ViewData["Title"] = "Purchase Details";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+        --bg-page: #f0f2f7;
+        --bg-card: #ffffff;
+        --border: #e2e6f0;
+        --text-primary: #1a1e2e;
+        --text-muted: #6b7394;
+        --accent: #3d5cff;
+        --radius: 10px;
+        --shadow: 0 2px 12px rgba(61,92,255,.07);
+        --sans: 'DM Sans', sans-serif;
+    }
+
+    body { font-family: var(--sans); background: var(--bg-page); }
+    .details-page { padding: 2rem 1.5rem 3rem; max-width: 900px; margin: auto; }
+    .card-shell { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .info-item label { font-size: .8rem; color: var(--text-muted); display: block; margin-bottom: .2rem; }
+    .info-item span { font-size: .95rem; color: var(--text-primary); font-weight: 500; }
+    .table thead th { background: #f7f8fc; color: var(--text-muted); font-size: .78rem; text-transform: uppercase; }
+    .total-row td { font-weight: 600; font-size: 1rem; }
+    .back-btn { color: var(--text-muted); text-decoration: none; font-size: .9rem; display: inline-flex; align-items: center; gap: .4rem; margin-bottom: 1.25rem; }
+    .back-btn:hover { color: var(--accent); }
+</style>
+
+<div class="details-page">
+
+    <a asp-action="Index" class="back-btn"><i class="bi bi-arrow-left"></i> Back to Purchases</a>
+
+    <div class="card-shell">
+        <div class="section-title">Purchase Information</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Purchase ID</label>
+                <span>#@Model.Id</span>
+            </div>
+            <div class="info-item">
+                <label>Purchase Date</label>
+                <span>@Model.PurchaseDate.ToString("MMM dd, yyyy")</span>
+            </div>
+            <div class="info-item">
+                <label>Supplier</label>
+                <span>@Model.SupplierName</span>
+            </div>
+            <div class="info-item">
+                <label>Status</label>
+                <span>@Model.Status</span>
+            </div>
+            <div class="info-item">
+                <label>Created By</label>
+                <span>@Model.CreatedByUser</span>
+            </div>
+            <div class="info-item">
+                <label>Total Amount</label>
+                <span>@Model.TotalAmount.ToString("C")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-shell">
+        <div class="section-title">Purchase Items</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int i = 1; }
+                @foreach (var item in Model.PurchaseItems)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@item.Product?.Name</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitCost.ToString("C")</td>
+                        <td>@item.TotalCost.ToString("C")</td>
+                    </tr>
+                    i++;
+                }
+                <tr class="total-row">
+                    <td colspan="4" class="text-end">Total</td>
+                    <td>@Model.TotalAmount.ToString("C")</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+
+</div>
