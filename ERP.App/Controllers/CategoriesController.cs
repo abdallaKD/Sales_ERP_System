@@ -43,7 +43,7 @@ namespace ERP.App.Controllers
                     c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
-            int pageSize = 10; 
+            int pageSize = 5;
             int totalItems = categories.Count();
             int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
