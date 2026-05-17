@@ -1,6 +1,7 @@
 ﻿using ERP.Domain.Enums;
 using ERP.Domain.Models;
 using ERP.Repositories.Repository;
+using ERP.Services.InventoryLogService;
 using ERP.Services.ViewModels.OrderVM;
 
 namespace ERP.Services.OrderService
@@ -8,7 +9,14 @@ namespace ERP.Services.OrderService
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public OrderService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IInventoryLogService inventoryLogService;
+
+        public OrderService(IUnitOfWork unitOfWork, IInventoryLogService inventoryLogService)
+        {
+            _unitOfWork = unitOfWork;
+            this.inventoryLogService = inventoryLogService;
+        }
+
 
         // Index
         public async Task<IEnumerable<OrderViewModel>> GetAllOrdersAsync()
@@ -37,7 +45,7 @@ namespace ERP.Services.OrderService
             });
         }
 
-       
+
 
         // ── DETAILS ────────────────────────────────────────────
         public async Task<OrderDetailsViewModel?> GetOrderDetailsAsync(int id)
@@ -127,6 +135,7 @@ namespace ERP.Services.OrderService
             order.TotalAmount = total;
 
             await _unitOfWork.CompleteAsync();
+            await inventoryLogService.CreateInventoryLogAsync(order);
         }
 
 
@@ -143,6 +152,9 @@ namespace ERP.Services.OrderService
 
             if (model.Items == null || !model.Items.Any())
                 throw new Exception("Cannot update an order with no items.");
+
+            //Inventory log
+            await inventoryLogService.CreateInventoryLogAsync(order, true);
 
             // 1. Restore old stock and remove old items
             var oldItems = await _unitOfWork.OrderItems.FindAsync(oi => oi.OrderId == order.Id);
@@ -190,6 +202,7 @@ namespace ERP.Services.OrderService
             _unitOfWork.Orders.Update(order);
 
             await _unitOfWork.CompleteAsync();
+            await inventoryLogService.CreateInventoryLogAsync(order);
         }
 
 
