@@ -2,12 +2,15 @@
 using ERP.Services.CategoryService;
 using ERP.Services.CustomerService;
 using ERP.Services.ViewModels.CustomerVM;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using static NuGet.Packaging.PackagingConstants;
 
 namespace ERP.App.Controllers
 {
+    [Authorize(Roles = "Admin,SalesEmployee")]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -17,21 +20,60 @@ namespace ERP.App.Controllers
             _customerService = customerService;
         }
         // GET: /Customer
-        public async Task<IActionResult> Index()
-        {
 
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
+        {
+            int pageSize = 5;
+
+            // Get all customers (consider moving search to the database later for performance)
             var customers = await _customerService.GetAllCustomersAsync();
-            var customerVMs = customers.Select(c => new CustomerViewModel
+
+            // 🔁 SEARCH across multiple fields
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+                customers = customers.Where(c =>
+                    (!string.IsNullOrEmpty(c.Name) && c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.Phone) && c.Phone.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.Address) && c.Address.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            // Pagination setup
+            pageNumber = Math.Max(1, pageNumber);
+            int totalItems = customers.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (totalPages > 0)
+                pageNumber = Math.Min(pageNumber, totalPages);
+
+            var pagedCustomers = customers
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Map to ViewModel
+            var viewModel = pagedCustomers.Select(c => new CustomerViewModel
             {
                 Id = c.Id,
                 Name = c.Name,
                 Phone = c.Phone,
                 Email = c.Email,
-                Address = c.Address,
-            });
+                Address = c.Address
+            }).ToList();
 
-            return View(customerVMs);
+            // Preserve search and pagination state
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View(viewModel);
         }
+
+
+
         #region create
         //Get :  /Customer/Create
         [HttpGet]
@@ -178,7 +220,7 @@ namespace ERP.App.Controllers
 
             return View(vm);
         }
-        // POST: /Categories/Delete/5
+        // POST: /customer/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
