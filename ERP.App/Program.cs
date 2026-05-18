@@ -3,14 +3,15 @@ using ERP.Repositories;
 using ERP.Repositories.Repository;
 using ERP.Services.CategoryService;
 using ERP.Services.CustomerService;
+using ERP.Services.InventoryLogService;
 using ERP.Services.LoginService;
 using ERP.Services.OrderService;
 using ERP.Services.ProductsService;
+using ERP.Services.PurchaseService;
 using ERP.Services.SupplierService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Principal;
-using ERP.Services.PurchaseService;
 
 namespace ERP.App
 {
@@ -51,6 +52,7 @@ namespace ERP.App
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+            builder.Services.AddScoped<IInventoryLogService, InventoryLogService>();
 
             builder.Services.AddScoped<IOrderService, OrderService>();
 

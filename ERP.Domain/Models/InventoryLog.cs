@@ -14,11 +14,6 @@ namespace ERP.Domain.Models
         [Key]
         public int Id { get; set; }
 
-        /// <summary>
-        /// Signed quantity:
-        ///   +n = IN  (stock increased)
-        ///   -n = OUT (stock decreased)
-        /// </summary>
         [Required]
         [Display(Name = "Quantity")]
         public int Quantity { get; set; }
@@ -26,13 +21,6 @@ namespace ERP.Domain.Models
         [Required]
         [Display(Name = "Movement Type")]
         public InventoryMovementType Type { get; set; }
-
-
-        /// <summary>
-        /// Polymorphic FK — holds the Id of the originating Order or Purchase.
-        /// Null for manual adjustments with no linked transaction.
-        /// </summary>
- 
 
         [ForeignKey(nameof(Order))]
         public int? OrderId { get; set; }
