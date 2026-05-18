@@ -66,7 +66,7 @@
             </dl>
 
             <!-- Action Buttons -->
-            <form asp-action="Cancel" method="post" class="d-flex gap-2">
+            <form asp-action="ConfirmCancel" method="post" class="d-flex gap-2">
                 <input type="hidden" name="id" value="@Model.OrderId" />
                 @Html.AntiForgeryToken()
 

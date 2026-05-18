@@ -2,6 +2,7 @@
 using ERP.Services.CategoryService;
 using ERP.Services.CustomerService;
 using ERP.Services.ViewModels.CustomerVM;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -9,6 +10,7 @@ using static NuGet.Packaging.PackagingConstants;
 
 namespace ERP.App.Controllers
 {
+    [Authorize(Roles = "Admin,SalesEmployee")]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -18,7 +20,8 @@ namespace ERP.App.Controllers
             _customerService = customerService;
         }
         // GET: /Customer
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
             int pageSize = 5;
 
@@ -68,7 +71,6 @@ namespace ERP.App.Controllers
 
             return View(viewModel);
         }
-        #endregion
 
 
 

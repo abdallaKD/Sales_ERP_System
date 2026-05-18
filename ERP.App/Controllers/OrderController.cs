@@ -8,7 +8,7 @@ using ERP.Repositories.Repository;
 
 namespace ERP.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,SalesEmployee")]
     public class OrdersController : Controller
     {
         private readonly IOrderService _orderService;
@@ -184,12 +184,21 @@ namespace ERP.Web.Controllers
                 return View(await BuildFormViewModel(model));
             }
         }
+        // ── CANCEL GET ────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var order = await _orderService.GetOrderDetailsAsync(id);
 
+            if (order == null)
+                return NotFound();
 
+            return View(order);
+        }
         // ── CANCEL POST ────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(int id)
+        public async Task<IActionResult> ConfirmCancel(int id)
         {
             try
             {
@@ -200,6 +209,7 @@ namespace ERP.Web.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
+
             return RedirectToAction(nameof(Index));
         }
 
