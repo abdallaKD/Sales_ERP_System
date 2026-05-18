@@ -66,6 +66,14 @@
                     {
                         <tr>
                             <td>
+                                <button type="submit" asp-action="RemoveRow"
+                                        asp-route-rowIndex="@i"
+                                        class="btn btn-sm btn-outline-danger">
+                                    &times;
+                                </button>
+                            </td>
+
+                            <td>
                                 <select name="Items[@i].ProductId" class="form-select">
                                     <option value="0">-- Select product --</option>
                                     @foreach (var p in Model.Products!)

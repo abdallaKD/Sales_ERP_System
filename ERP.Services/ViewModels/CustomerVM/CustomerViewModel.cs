@@ -19,9 +19,8 @@ namespace ERP.Services.ViewModels.CustomerVM
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        [Phone]
         [Display(Name = "Phone Number")]
+        [RegularExpression(@"^01[0-2,5]{1}[0-9]{8}$", ErrorMessage = "Enter valid Egyptian phone number")]
         public string Phone { get; set; } = string.Empty;
 
         [MaxLength(256)]
