@@ -59,7 +59,6 @@ namespace ERP.App.Controllers
                 SupplierId = vm.SupplierId,
                 PurchaseDate = vm.PurchaseDate,
                 Status = PurchaseStatus.Pending,
-                CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ""
             };
 
             var items = vm.PurchaseItems.Select(i => new PurchaseItem
@@ -109,7 +108,8 @@ namespace ERP.App.Controllers
                 SupplierId = vm.SupplierId,
                 PurchaseDate = vm.PurchaseDate,
                 Status = Enum.Parse<PurchaseStatus>(vm.Status),
-                TotalAmount = vm.TotalAmount
+                TotalAmount = vm.TotalAmount,
+                CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ""
             };
 
             try
