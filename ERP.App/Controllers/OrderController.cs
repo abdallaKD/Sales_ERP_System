@@ -39,10 +39,54 @@ namespace ERP.Web.Controllers
 
 
         // ── INDEX ──────────────────────────────────────────
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
+            // Fetch all orders from service
             var orders = await _orderService.GetAllOrdersAsync();
-            return View(orders);
+
+            // Apply search filter (case‑insensitive, by customer name)
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                orders = orders.Where(o =>
+                    o.CustomerName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            // Pagination setup
+            int pageSize = 5;
+            int totalItems = orders.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Validate page number
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            // Apply pagination
+            var pagedOrders = orders
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Map to ViewModel (OrderViewModel)
+            var viewModel = pagedOrders.Select(o => new OrderViewModel
+            {
+                Id = o.Id,
+                CustomerName = o.CustomerName,
+                OrderDate = o.OrderDate,
+                Status = o.Status,
+                TotalAmount = o.TotalAmount,
+                PaidAmount = o.PaidAmount,
+                RemainingAmount = o.RemainingAmount
+                // adjust any other properties you have
+            }).ToList();
+
+            // Pass pagination metadata via ViewData
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View(viewModel);
         }
 
         // ── DETAILS ────────────────────────────────────────
