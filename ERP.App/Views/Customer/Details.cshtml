@@ -80,40 +80,9 @@
     </div>
 </div>
 
-<!-- Payments -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>Payments</h5>
-    </div>
-    <div class="card-body">
-        @if (!Model.Payments.Any())
-        {
-            <p class="text-muted">No payments found.</p>
-        }
-        else
-        {
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Payment ID</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var payment in Model.Payments)
-                    {
-                        <tr>
-                            <td>@payment.Id</td>
-                            <td>@payment.Amount.ToString("C")</td>
-                            <td>@payment.PaymentDate.ToString("dd/MM/yyyy")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    </div>
-</div>
+           
+
+        </div>
 
 <!-- Actions -->
 <div>

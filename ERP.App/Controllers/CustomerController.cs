@@ -178,7 +178,7 @@ namespace ERP.App.Controllers
 
             return View(vm);
         }
-        // POST: /Categories/Delete/5
+        // POST: /customer/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

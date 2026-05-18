@@ -1,25 +1,66 @@
 ﻿@using ERP.Services.ViewModels.CustomerVM
-
 @model CustomerViewModel
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Customer";
 }
-<h2>Delete Customer</h2>
 
-<div class="alert alert-warning">
-    <h4>Are you sure you want to delete this customer?</h4>
+<div class="container py-4" style="max-width: 600px;">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-trash-fill me-2 text-danger"></i>Delete Customer
+        </h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Customer" asp-action="Index">Customers</a></li>
+                <li class="breadcrumb-item active">Delete</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Warning Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="alert alert-warning d-flex align-items-center mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Are you sure?</h5>
+                    <p class="mb-0">This action cannot be undone. This customer will be permanently removed.</p>
+                </div>
+            </div>
+
+            <!-- Customer Details -->
+            <dl class="row mb-4">
+                <dt class="col-sm-3 text-muted fw-semibold">Name</dt>
+                <dd class="col-sm-9 fw-bold">@Model.Name</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Phone</dt>
+                <dd class="col-sm-9">@Model.Phone</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Address</dt>
+                <dd class="col-sm-9">@Model.Address</dd>
+            </dl>
+
+            <!-- Action Buttons -->
+            <form asp-action="DeleteConfirmed" method="post" class="d-flex gap-2">
+                <input type="hidden" name="id" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="bi bi-check-lg me-1"></i>Yes, Delete
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                </a>
+            </form>
+
+        </div>
+    </div>
 </div>
-
-<div>
-    <p><strong>Name:</strong> @Model.Name</p>
-    <p><strong>Email:</strong> @Model.Email</p>
-    <p><strong>Phone:</strong> @Model.Phone</p>
-</div>
-
-<form asp-action="DeleteConfirmed" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
-
-    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
