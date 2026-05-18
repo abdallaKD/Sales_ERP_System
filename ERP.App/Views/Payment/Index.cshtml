@@ -1,0 +1,56 @@
+﻿@model List<ERP.Services.ViewModels.PaymentListViewModel>
+@{
+    ViewData["Title"] = "All Payments";
+}
+
+<h4 class="mb-4">All Payments</h4>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Order</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Date</th>
+            <th>Order Status</th>
+            <th>Remaining</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>
+                    <a asp-action="OrderPayments" asp-route-orderId="@p.OrderId">#@p.OrderId</a>
+                </td>
+                <td>@p.CustomerName</td>
+                <td class="text-success fw-semibold">@p.Amount.ToString("C")</td>
+                <td>@p.PaymentMethod</td>
+                <td>@p.PaymentDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <span class="badge @(p.PaymentStatus == "Paid" ? "bg-success" : p.PaymentStatus == "Partial" ? "bg-warning text-dark" : "bg-danger")">
+                        @p.PaymentStatus
+                    </span>
+                </td>
+                <td>@p.OrderRemaining.ToString("C")</td>
+                <td>
+                    <a asp-action="OrderPayments" asp-route-orderId="@p.OrderId"
+                       class="btn btn-sm btn-outline-primary">View Order</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -3,9 +3,11 @@ using ERP.Repositories;
 using ERP.Repositories.Repository;
 using ERP.Services.CategoryService;
 using ERP.Services.CustomerService;
+using ERP.Services.DashboardService;
 using ERP.Services.InventoryLogService;
 using ERP.Services.LoginService;
 using ERP.Services.OrderService;
+using ERP.Services.PaymentService;
 using ERP.Services.ProductsService;
 using ERP.Services.PurchaseService;
 using ERP.Services.SupplierService;
@@ -53,8 +55,10 @@ namespace ERP.App
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IPurchaseService, PurchaseService>();
             builder.Services.AddScoped<IInventoryLogService, InventoryLogService>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
 
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
 
             var app = builder.Build();
             app.UseStaticFiles();

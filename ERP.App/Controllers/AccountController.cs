@@ -16,10 +16,10 @@ namespace ERP.App.Controllers
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            //if (User.Identity?.IsAuthenticated == true)
-            //    return RedirectToAction("Index", "Home");
+            if (User.Identity?.IsAuthenticated == true)
+                return RedirectToAction("Index", "Home");
 
-            //ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
             return View("Login");
         }
 
@@ -27,7 +27,7 @@ namespace ERP.App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LoginAsync(LoginViewModel model, string? returnUrl = null)
         {
-            //ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
 
             if (!ModelState.IsValid)
                 return View("Login", model);
@@ -36,8 +36,8 @@ namespace ERP.App.Controllers
 
             if (result.Succeeded)
             {
-                //if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                //    return Redirect(returnUrl);
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
             }
 

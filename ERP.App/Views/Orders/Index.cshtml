@@ -88,6 +88,22 @@
                     </p>
                     @if (string.IsNullOrEmpty(currentFilter))
                     {
+                                <a asp-action="Edit" asp-route-id="@o.Id"
+                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                                
+                                   <a asp-controller="Payment"
+                                   asp-action="OrderPayments"
+                                   asp-route-orderId="@o.Id"
+                                   class="btn btn-sm btn-outline-success">Payments</a>
+
+                                <form asp-action="Cancel" asp-route-id="@o.Id"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Cancel this order?')">
+                            @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Cancel
+                                    </button>
+                                </form>
                         <a asp-action="Create">Create one now.</a>
                     }
                 </div>
