@@ -8,7 +8,7 @@ using ERP.Repositories.Repository;
 
 namespace ERP.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,SalesEmployee")]
     public class OrdersController : Controller
     {
         private readonly IOrderService _orderService;
@@ -19,12 +19,74 @@ namespace ERP.Web.Controllers
             _orderService = orderService;
             _unitOfWork = unitOfWork;
         }
+        #region help action
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddRow(OrderDetailsViewModel model)
+        {
+            model.Items ??= new List<OrderItemFormViewModel>();
+            model.Items.Add(new OrderItemFormViewModel());
+
+            await BuildFormViewModel(model);
+
+            return View("Create", model);
+        }
+
+        #endregion
+
+
+
+
 
         // ── INDEX ──────────────────────────────────────────
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
+            // Fetch all orders from service
             var orders = await _orderService.GetAllOrdersAsync();
-            return View(orders);
+
+            // Apply search filter (case‑insensitive, by customer name)
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                orders = orders.Where(o =>
+                    o.CustomerName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            // Pagination setup
+            int pageSize = 5;
+            int totalItems = orders.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Validate page number
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            // Apply pagination
+            var pagedOrders = orders
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Map to ViewModel (OrderViewModel)
+            var viewModel = pagedOrders.Select(o => new OrderViewModel
+            {
+                Id = o.Id,
+                CustomerName = o.CustomerName,
+                OrderDate = o.OrderDate,
+                Status = o.Status,
+                TotalAmount = o.TotalAmount,
+                PaidAmount = o.PaidAmount,
+                RemainingAmount = o.RemainingAmount
+                // adjust any other properties you have
+            }).ToList();
+
+            // Pass pagination metadata via ViewData
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View(viewModel);
         }
 
         // ── DETAILS ────────────────────────────────────────
@@ -45,14 +107,7 @@ namespace ERP.Web.Controllers
             };
             return View(await BuildFormViewModel(model));
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddRow(OrderDetailsViewModel model)
-        {
-            model.Items ??= new List<OrderItemFormViewModel>();
-            model.Items.Add(new OrderItemFormViewModel());
-            return View("Create", await BuildFormViewModel(model));
-        }
+       
         // ── CREATE POST ────────────────────────────────────
 
         [HttpPost]
@@ -90,19 +145,15 @@ namespace ERP.Web.Controllers
 
 
 
-
         // ── EDIT GET ───────────────────────────────────────
         public async Task<IActionResult> Edit(int id)
         {
             var model = await _orderService.GetOrderDetailsAsync(id);
             if (model == null) return NotFound();
-
-            while (model.Items.Count < 5)
-                model.Items.Add(new OrderItemFormViewModel());
-
             return View(await BuildFormViewModel(model));
         }
 
+       
         // ── EDIT POST ──────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -133,12 +184,21 @@ namespace ERP.Web.Controllers
                 return View(await BuildFormViewModel(model));
             }
         }
+        // ── CANCEL GET ────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var order = await _orderService.GetOrderDetailsAsync(id);
 
+            if (order == null)
+                return NotFound();
 
+            return View(order);
+        }
         // ── CANCEL POST ────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(int id)
+        public async Task<IActionResult> ConfirmCancel(int id)
         {
             try
             {
@@ -149,6 +209,7 @@ namespace ERP.Web.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
+
             return RedirectToAction(nameof(Index));
         }
 

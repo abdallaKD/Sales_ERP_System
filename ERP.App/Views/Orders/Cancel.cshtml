@@ -1,0 +1,83 @@
+﻿@model ERP.Services.ViewModels.OrderVM.OrderDetailsViewModel
+
+@{
+    ViewData["Title"] = "Cancel Order";
+}
+
+<div class="container py-4" style="max-width: 700px;">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-x-circle-fill me-2 text-danger"></i>Cancel Order
+        </h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Order" asp-action="Index">Orders</a></li>
+                <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.OrderId">Order #@Model.OrderId</a></li>
+                <li class="breadcrumb-item active">Cancel</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Warning Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="alert alert-warning d-flex align-items-center mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Are you sure you want to cancel this order?</h5>
+                    <p class="mb-0">This action cannot be undone. The order will be marked as Cancelled.</p>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <h5 class="fw-bold text-dark mb-3">
+                <i class="bi bi-receipt me-2 text-primary"></i>Order Information
+            </h5>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-4 text-muted fw-semibold">Order ID</dt>
+                <dd class="col-sm-8">
+                    <code class="text-primary fw-medium">#@Model.OrderId</code>
+                </dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Customer</dt>
+                <dd class="col-sm-8 fw-bold">@Model.CustomerName</dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Order Date</dt>
+                <dd class="col-sm-8">@Model.OrderDate.ToString("dd MMM yyyy")</dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Current Status</dt>
+                <dd class="col-sm-8">
+                    <span class="badge bg-warning text-dark">@Model.Status</span>
+                </dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Total Amount</dt>
+                <dd class="col-sm-8 text-primary fw-bold">@Model.TotalAmount.ToString("C")</dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Paid Amount</dt>
+                <dd class="col-sm-8 text-success">@Model.PaidAmount.ToString("C")</dd>
+
+                <dt class="col-sm-4 text-muted fw-semibold">Remaining Amount</dt>
+                <dd class="col-sm-8 text-danger fw-semibold">@Model.RemainingAmount.ToString("C")</dd>
+            </dl>
+
+            <!-- Action Buttons -->
+            <form asp-action="ConfirmCancel" method="post" class="d-flex gap-2">
+                <input type="hidden" name="id" value="@Model.OrderId" />
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="bi bi-check-lg me-1"></i>Yes, Cancel Order
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Order Details
+                </a>
+            </form>
+
+        </div>
+    </div>
+</div>
