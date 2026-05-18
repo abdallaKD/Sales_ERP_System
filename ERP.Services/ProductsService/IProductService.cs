@@ -12,7 +12,7 @@ namespace ERP.Services.ProductsService
     public interface IProductService
     {
         Task<IEnumerable<Product>> GetAllProductsAsync();
-        Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoryName();
+        Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoryName(int pageNumber);
         Task<ProductViewModel> GetProductByIdWithCategoryName(int id);
         Task<Product?> GetProductByIdAsync(int id);
         Task<bool> CreateProductAsync(Product product);

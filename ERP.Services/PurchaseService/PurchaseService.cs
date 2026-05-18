@@ -1,21 +1,24 @@
-﻿using System;
+﻿using ERP.Domain.Models;
+using ERP.Repositories.Repository;
+using ERP.Services.InventoryLogService;
+using ERP.Services.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ERP.Domain.Models;
-using ERP.Repositories.Repository;
-using ERP.Services.ViewModels;
 
 namespace ERP.Services.PurchaseService
 {
     public class PurchaseService : IPurchaseService
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IInventoryLogService inventoryLogService;
 
-        public PurchaseService(IUnitOfWork unitOfWork)
+        public PurchaseService(IUnitOfWork unitOfWork, IInventoryLogService inventoryLogService)
         {
             this.unitOfWork = unitOfWork;
+            this.inventoryLogService = inventoryLogService;
         }
 
         public async Task<IEnumerable<Purchase>> GetAllPurchasesAsync()
@@ -49,13 +52,20 @@ namespace ERP.Services.PurchaseService
             purchase.TotalAmount = items.Sum(i => i.Quantity * i.UnitCost);
 
             await unitOfWork.Purchases.AddAsync(purchase);
-            return await unitOfWork.CompleteAsync() > 0;
+            //return await unitOfWork.CompleteAsync() > 0;
+            bool ret = await unitOfWork.CompleteAsync() > 0;
+            await inventoryLogService.CreateInventoryLogAsync(purchase);
+            return ret;
         }
 
         public async Task<bool> UpdatePurchaseAsync(Purchase purchase)
         {
+            Purchase? purchaseLog = await unitOfWork.Purchases.GetByIdAsync(purchase.Id);
+            await inventoryLogService.CreateInventoryLogAsync(purchaseLog, true);
             unitOfWork.Purchases.Update(purchase);
-            return await unitOfWork.CompleteAsync() > 0;
+            bool ret = await unitOfWork.CompleteAsync() > 0;
+            await inventoryLogService.CreateInventoryLogAsync(purchase);
+            return ret;
         }
 
         public async Task<bool> DeletePurchaseAsync(int id)

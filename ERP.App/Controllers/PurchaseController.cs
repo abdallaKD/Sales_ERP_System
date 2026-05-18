@@ -3,6 +3,7 @@ using ERP.Domain.Models;
 using ERP.Domain.Enums;
 using ERP.Services.PurchaseService;
 using ERP.Services.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ERP.App.Controllers
