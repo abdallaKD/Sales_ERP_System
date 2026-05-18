@@ -3,7 +3,6 @@
     ViewData["Title"] = "Login";
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,52 +10,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — ERP System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #2563eb;
+            --brand-light: #eff6ff;
+            --brand-dark: #1d4ed8;
+            --brand-glow: rgba(37,99,235,0.15);
+            --surface: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-focus: #2563eb;
+            --input-bg: #f8fafc;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --danger-border: #fecaca;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--surface);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            /* ── Soft background blobs ── */
+            body::before {
+                content: '';
+                position: fixed;
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%);
+                top: -200px;
+                right: -100px;
+                pointer-events: none;
+            }
+
+            body::after {
+                content: '';
+                position: fixed;
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+                bottom: -150px;
+                left: -100px;
+                pointer-events: none;
+            }
+
+        /* ── Card ── */
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            padding: 1rem;
+            animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @@keyframes fadeUp {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 2.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06), 0 32px 64px rgba(0,0,0,0.04);
+        }
+
+        /* ── Header ── */
+        .card-logo {
+            width: 44px;
+            height: 44px;
+            background: var(--brand);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px var(--brand-glow);
+        }
+
+            .card-logo svg {
+                width: 22px;
+                height: 22px;
+                fill: #fff;
+            }
+
+        .card-heading {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+        }
+
+        .card-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Fields ── */
+        .field {
+            margin-bottom: 1.1rem;
+        }
+
+            .field label {
+                display: block;
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 0.4rem;
+            }
+
+            .field input[type="email"],
+            .field input[type="password"],
+            .field input[type="text"] {
+                width: 100%;
+                background: var(--input-bg);
+                border: 1.5px solid var(--border);
+                border-radius: 10px;
+                padding: 0.68rem 0.95rem;
+                color: var(--text-primary);
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 0.9rem;
+                font-weight: 400;
+                transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+                outline: none;
+            }
+
+            .field input:focus {
+                border-color: var(--brand);
+                background: #fff;
+                box-shadow: 0 0 0 3px var(--brand-glow);
+            }
+
+            .field input::placeholder {
+                color: #cbd5e1;
+            }
+
+            .field .text-danger {
+                font-size: 0.75rem;
+                color: var(--danger) !important;
+                margin-top: 0.3rem;
+                display: block;
+                font-weight: 500;
+            }
+
+        /* ── Validation summary ── */
+        .alert-danger {
+            background: var(--danger-bg) !important;
+            border: 1.5px solid var(--danger-border) !important;
+            border-radius: 10px !important;
+            color: #b91c1c !important;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.7rem 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── Remember me ── */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+            .remember-row input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--brand);
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            .remember-row label {
+                font-size: 0.83rem;
+                color: var(--text-muted);
+                font-weight: 400;
+                cursor: pointer;
+                user-select: none;
+            }
+
+        /* ── Button ── */
+        .btn-signin {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px var(--brand-glow);
+            letter-spacing: 0.01em;
+        }
+
+            .btn-signin:hover {
+                background: var(--brand-dark);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 20px rgba(37,99,235,0.25);
+            }
+
+            .btn-signin:active {
+                transform: translateY(0);
+                box-shadow: none;
+            }
+
+        /* ── Footer ── */
+        .card-footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 1.5rem;
+            font-weight: 400;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-md-5">
-                <div class="card shadow-sm">
-                    <div class="card-body p-4">
+    <div class="login-wrapper">
+        <div class="login-card">
 
-                        <h3 class="card-title text-center mb-4">ERP System Login</h3>
-
-                        <form asp-action="Login" asp-controller="Account" method="post">
-                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
-                            <div class="mb-3">
-                                <label asp-for="Email" class="form-label"></label>
-                                <input asp-for="Email" class="form-control" placeholder="you@example.com" autocomplete="email" />
-                                <span asp-validation-for="Email" class="text-danger small"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Password" class="form-label"></label>
-                                <input asp-for="Password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
-                                <span asp-validation-for="Password" class="text-danger small"></span>
-                            </div>
-
-                            <div class="mb-3 form-check">
-                                <input asp-for="RememberMe" class="form-check-input" />
-                                <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Sign In</button>
-                            </div>
-                        </form>
-
-                    </div>
-                </div>
+            <!-- Logo mark -->
+            <div class="card-logo">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
+                </svg>
             </div>
+
+            <div class="card-heading">Sign in</div>
+            <div class="card-hint">Enter your credentials to access the dashboard</div>
+
+            <form asp-action="Login" asp-controller="Account" method="post">
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="field">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" type="email"
+                           placeholder="you@example.com"
+                           autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" type="password"
+                           placeholder="••••••••"
+                           autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="remember-row">
+                    <input asp-for="RememberMe" type="checkbox" />
+                    <label asp-for="RememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn-signin">Sign In</button>
+            </form>
+
+            <div class="card-footer-note">© @DateTime.Now.Year ERP System. All rights reserved.</div>
         </div>
     </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
-
 </body>
 </html>
-
