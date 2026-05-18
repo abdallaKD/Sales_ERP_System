@@ -40,7 +40,7 @@ namespace ERP.Services.OrderService
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     PaidAmount = o.PaidAmount,
-                    //RemainingAmount = o.RemainingAmount
+                    RemainingAmount = o.TotalAmount - o.PaidAmount
                 };
             });
         }

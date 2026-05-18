@@ -245,7 +245,7 @@
             <!-- Customers -->
             <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customers" ? "active" : "")"
-                   asp-controller="Customers" asp-action="Index">
+                   asp-controller="Customer" asp-action="Index">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Customers</span>
                 </a>
@@ -257,6 +257,14 @@
                    asp-controller="Orders" asp-action="Index">
                     <i class="fas fa-fw fa-shopping-cart"></i>
                     <span>Orders</span>
+                </a>
+            </li>
+            <!-- Payments -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payment" ? "active" : "")"
+                   asp-controller="Payment" asp-action="Index">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Payments</span>
                 </a>
             </li>
 
@@ -275,16 +283,16 @@
             <!-- Purchases -->
             <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Purchases" ? "active" : "")"
-                   asp-controller="Purchases" asp-action="Index">
+                   asp-controller="Purchase" asp-action="Index">
                     <i class="fas fa-fw fa-file-invoice-dollar"></i>
-                    <span>Purchases</span>
+                    <span>Purchase</span>
                 </a>
             </li>
 
             <!-- Inventory Log -->
             <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "InventoryLogs" ? "active" : "")"
-                   asp-controller="InventoryLogs" asp-action="Index">
+                   asp-controller="InventoryLog" asp-action="Index">
                     <i class="fas fa-fw fa-clipboard-list"></i>
                     <span>Inventory Log</span>
                 </a>
@@ -296,7 +304,7 @@
             <!-- Users -->
             <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")"
-                   asp-controller="Users" asp-action="Index">
+                   asp-controller="Account" asp-action="Users">
                     <i class="fas fa-fw fa-user-cog"></i>
                     <span>Users</span>
                 </a>
@@ -500,9 +508,12 @@
                     <button class="btn btn-sm btn-light" type="button" data-dismiss="modal">
                         Cancel
                     </button>
-                    <a class="btn btn-sm btn-danger" asp-controller="Account" asp-action="Logout">
-                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
-                    </a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
