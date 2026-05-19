@@ -523,19 +523,19 @@
     <div class="stats-strip">
         <div class="stat-card">
             <span class="stat-card__label">Total Products</span>
-            <span class="stat-card__val">@total</span>
+            <span class="stat-card__val">@ViewData["totalProducts"]</span>
         </div>
         <div class="stat-card stat-card--danger">
             <span class="stat-card__label">Out of Stock</span>
-            <span class="stat-card__val">@outOfStock</span>
+            <span class="stat-card__val">@ViewData["out"]</span>
         </div>
         <div class="stat-card stat-card--warning">
             <span class="stat-card__label">Low Stock (≤ @LowStockThreshold)</span>
-            <span class="stat-card__val">@lowStock</span>
+            <span class="stat-card__val">@ViewData["low"]</span>
         </div>
         <div class="stat-card stat-card--success">
             <span class="stat-card__label">Well Stocked (> @MediumStockThreshold)</span>
-            <span class="stat-card__val">@goodStock</span>
+            <span class="stat-card__val">@ViewData["good"]</span>
         </div>
     </div>
 
@@ -682,14 +682,14 @@
 
         @if (totalPages > 1)
         {
-            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center py-3">
-                <div class="text-muted small">
+            <div class=" me-5 card-footer bg-white border-0 d-flex justify-content-between align-items-center py-3">
+                <div class="text-muted small ms-4">
                     Showing page <strong>@currentPage</strong> of @totalPages
                 </div>
                 <nav aria-label="Page navigation">
                     <ul class="pagination pagination-sm mb-0">
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-item" asp-action="Index"
+                            <a class="page-link" asp-action="Index"
                                        asp-route-pageNumber="@(currentPage - 1)"
                                        class="page-link">Previous</a>
                         </li>
