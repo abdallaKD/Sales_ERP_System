@@ -1,56 +1,198 @@
 ﻿@model List<ERP.Services.ViewModels.PaymentListViewModel>
 @{
     ViewData["Title"] = "All Payments";
+
+    string currentFilter = ViewData["CurrentFilter"] as string ?? string.Empty;
+    int currentPage = Convert.ToInt32(ViewData["CurrentPage"] ?? 1);
+    int totalPages = Convert.ToInt32(ViewData["TotalPages"] ?? 1);
+    int pageSize = Convert.ToInt32(ViewData["PageSize"] ?? 10);
+
+    int counter = ((currentPage - 1) * pageSize) + 1;
+
+    var filtered = string.IsNullOrEmpty(currentFilter)
+        ? Model
+        : Model.Where(p =>
+            (p.CustomerName ?? "").Contains(currentFilter, StringComparison.OrdinalIgnoreCase) ||
+            p.OrderId.ToString().Contains(currentFilter))
+          .ToList();
 }
 
-<h4 class="mb-4">All Payments</h4>
+<div class="container-fluid px-4 py-3">
 
-@if (TempData["Success"] is string success)
-{
-    <div class="alert alert-success">@success</div>
-}
-@if (TempData["Error"] is string error)
-{
-    <div class="alert alert-danger">@error</div>
-}
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
 
-<table class="table table-bordered table-hover align-middle">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Order</th>
-            <th>Customer</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Date</th>
-            <th>Order Status</th>
-            <th>Remaining</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.Id</td>
-                <td>
-                    <a asp-action="OrderPayments" asp-route-orderId="@p.OrderId">#@p.OrderId</a>
-                </td>
-                <td>@p.CustomerName</td>
-                <td class="text-success fw-semibold">@p.Amount.ToString("C")</td>
-                <td>@p.PaymentMethod</td>
-                <td>@p.PaymentDate.ToString("yyyy-MM-dd")</td>
-                <td>
-                    <span class="badge @(p.PaymentStatus == "Paid" ? "bg-success" : p.PaymentStatus == "Partial" ? "bg-warning text-dark" : "bg-danger")">
-                        @p.PaymentStatus
-                    </span>
-                </td>
-                <td>@p.OrderRemaining.ToString("C")</td>
-                <td>
-                    <a asp-action="OrderPayments" asp-route-orderId="@p.OrderId"
-                       class="btn btn-sm btn-outline-primary">View Order</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+        <div>
+            <h2 class="mb-1 fw-bold text-dark">
+                <i class="bi bi-cash-stack me-2 text-primary"></i>Payments
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Payments</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap flex-md-nowrap align-items-center">
+
+            <!-- Search -->
+            <form method="get" class="d-flex border rounded bg-white p-1 shadow-sm">
+                <input type="text"
+                       name="searchString"
+                       value="@currentFilter"
+                       class="form-control border-0 bg-transparent form-control-sm me-2"
+                       style="min-width:220px;"
+                       placeholder="Search by customer or order..." />
+                @if (!string.IsNullOrEmpty(currentFilter))
+                {
+                    <a asp-action="Index" class="btn btn-sm btn-light border-0 me-1">
+                        <i class="bi bi-x-lg text-muted"></i>
+                    </a>
+                }
+                <button type="submit" class="btn btn-sm btn-primary px-3">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@success
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@error
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+
+            @if (!filtered.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    <p class="mb-0">
+                        No payments found. @(string.IsNullOrEmpty(currentFilter) ? "" : "Try adjusting your search.")
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                                <th>Payment Status</th>
+                                <th>Remaining</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in filtered)
+                            {
+                                <tr>
+                                    <td class="text-muted">@(counter++)</td>
+                                    <td>
+                                        <a asp-action="OrderPayments"
+                                           asp-route-orderId="@p.OrderId"
+                                           class="fw-semibold text-decoration-none">
+                                            #@p.OrderId
+                                        </a>
+                                    </td>
+                                    <td class="fw-semibold">@p.CustomerName</td>
+                                    <td class="text-success fw-semibold">@p.Amount.ToString("C")</td>
+                                    <td>@p.PaymentMethod</td>
+                                    <td>@p.PaymentDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @if (p.PaymentStatus == "Paid")
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else if (p.PaymentStatus == "Partial")
+                                        {
+                                            <span class="badge bg-warning text-dark">Partial</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Unpaid</span>
+                                        }
+                                    </td>
+                                    <td class="@(p.OrderRemaining > 0 ? "text-danger" : "text-muted") fw-semibold">
+                                        @p.OrderRemaining.ToString("C")
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="OrderPayments"
+                                           asp-route-orderId="@p.OrderId"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="View Order Payments">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center py-3">
+                        <div class="text-muted small">
+                            Showing page <strong>@currentPage</strong> of @totalPages
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-pageNumber="@(currentPage - 1)"
+                                       asp-route-searchString="@currentFilter">
+                                        Previous
+                                    </a>
+                                </li>
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-pageNumber="@i"
+                                           asp-route-searchString="@currentFilter">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-pageNumber="@(currentPage + 1)"
+                                       asp-route-searchString="@currentFilter">
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+</div>
