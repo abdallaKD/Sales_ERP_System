@@ -1,5 +1,5 @@
 ﻿@model OrderDetailsViewModel
-
+@using ERP.Domain.Enums
 @{
     ViewData["Title"] = $"Edit Order #{Model.OrderId}";
 }
@@ -51,6 +51,13 @@
                     <span asp-validation-for="CustomerId" class="text-danger small"></span>
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" class="form-select"
+                            asp-items="Html.GetEnumSelectList<OrderStatus>()">
+                    </select>
+                </div>
+
                 <hr class="my-4" />
 
                 <!-- Order Items Section -->
@@ -98,7 +105,7 @@
                                         </tr>
                                     }
                                 </tbody>
-                                }</pre
+                            </table>
                         </div>
                     </div>
                 </div>
