@@ -34,6 +34,15 @@ namespace ERP.App.Controllers
             ViewData["CurrentPage"] = pageNumber;
             ViewData["TotalPages"] = totalPages;
             ViewData["PageSize"] = pageSize;
+            var Allproducts = await productService.GetAllProductsAsync();
+            ViewData["totalProducts"] = Allproducts.Count();
+            ViewData["out"] = Allproducts.Where(p => p.StockQuantity <= 0).Count(); ;
+            ViewData["low"] = Allproducts.Where(p => p.StockQuantity > 0 && p.StockQuantity <= 10).Count();
+            ViewData["mid"] = Allproducts.Where(p => p.StockQuantity > 10 && p.StockQuantity <= 30).Count();
+            ViewData["good"] = Allproducts.Where(p => p.StockQuantity > 30).Count();
+
+
+
             return View("Index", VM);
         }
 
