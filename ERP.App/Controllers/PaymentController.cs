@@ -14,10 +14,39 @@ namespace ERP.App.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString, int pageNumber = 1)
         {
             var payments = await _paymentService.GetAllPaymentsAsync();
-            return View(payments);
+
+            // ── Search
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                payments = payments.Where(p =>
+                    (p.CustomerName ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    p.OrderId.ToString().Contains(searchString) ||
+                    p.PaymentMethod.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // ── Pagination
+            int pageSize = 10;
+            int totalItems = payments.Count;
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var paged = payments
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View(paged);
         }
 
         [HttpGet]
