@@ -11,33 +11,135 @@ namespace ERP.Repositories.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ERPDBContext _context;
-        public IGenericRepository<Product> Products { get; private set; }
-        public IGenericRepository<Category> Categories { get; private set; }
-        public IGenericRepository<Order> Orders { get; private set; }
-        public IGenericRepository<InventoryLog> InventoryLogs { get; private set; }
-        public IGenericRepository<Customer> Customers { get; private set; }
-        public IGenericRepository<OrderItem> OrderItems { get; private set; }
-        public IGenericRepository<Purchase> Purchases { get; private set; }
-        public IGenericRepository<PurchaseItem> PurchaseItems { get; private set; }
-        public IGenericRepository<Supplier> Suppliers { get; private set; }
-        public IGenericRepository<Payment> Payments { get; private set; }
-        public IGenericRepository<ApplicationUser> ApplicationUsers { get; private set; }
+        GenericRepository<Product> productRepo;
+        GenericRepository<Category> categoriesRepo;
+        GenericRepository<Order> ordersRepo;
+        GenericRepository<InventoryLog> inventoryLogsRepo;
+        GenericRepository<Customer> customersRepo;
+        GenericRepository<OrderItem> orderItemsRepo;
+        GenericRepository<Purchase> purchasesRepo;
+        GenericRepository<PurchaseItem> purchaseItemsRepo;
+        GenericRepository<Supplier> suppliersRepo;
+        GenericRepository<Payment> paymentsRepo;
+        GenericRepository<ApplicationUser> applicationUsersRepo;
 
-        public UnitOfWork(ERPDBContext context, IGenericRepository<Product> products, IGenericRepository<Category> categories, IGenericRepository<Order> orders, IGenericRepository<InventoryLog> inventoryLogs, IGenericRepository<Customer> customers, IGenericRepository<OrderItem> orderItems, IGenericRepository<Purchase> purchases, IGenericRepository<PurchaseItem> purchaseItems, IGenericRepository<Supplier> suppliers, IGenericRepository<Payment> payments, IGenericRepository<ApplicationUser> applicationUsers)
+        public UnitOfWork(ERPDBContext context)
         {
             _context = context;
-            Products = products;
-            Categories = categories;
-            Orders = orders;
-            InventoryLogs = inventoryLogs;
-            Customers = customers;
-            OrderItems = orderItems;
-            Purchases = purchases;
-            PurchaseItems = purchaseItems;
-            Suppliers = suppliers;
-            Payments = payments;
-            ApplicationUsers = applicationUsers;
         }
+            
+
+        public IGenericRepository<Product> Products
+        {
+            get
+            {
+                if (productRepo == null)
+                    productRepo = new GenericRepository<Product>(_context);
+                return productRepo;
+            }
+        }
+
+        public IGenericRepository<Category> Categories
+        {
+            get
+            {
+                if (categoriesRepo == null)
+                    categoriesRepo = new GenericRepository<Category>(_context);
+                return categoriesRepo;
+            }
+        }
+
+        public IGenericRepository<Order> Orders
+        {
+            get
+            {
+                if (ordersRepo == null)
+                    ordersRepo = new GenericRepository<Order>(_context);
+                return ordersRepo;
+            }
+        }
+
+        public IGenericRepository<InventoryLog> InventoryLogs
+        {
+            get
+            {
+                if (inventoryLogsRepo == null)
+                    inventoryLogsRepo = new GenericRepository<InventoryLog>(_context);
+                return inventoryLogsRepo;
+            }
+        }
+
+        public IGenericRepository<Customer> Customers
+        {
+            get
+            {
+                if (customersRepo == null)
+                    customersRepo = new GenericRepository<Customer>(_context);
+                return customersRepo;
+            }
+        }
+
+        public IGenericRepository<OrderItem> OrderItems
+        {
+            get
+            {
+                if (orderItemsRepo == null)
+                    orderItemsRepo = new GenericRepository<OrderItem>(_context);
+                return orderItemsRepo;
+            }
+        }
+
+        public IGenericRepository<Purchase> Purchases
+        {
+            get
+            {
+                if (purchasesRepo == null)
+                    purchasesRepo = new GenericRepository<Purchase>(_context);
+                return purchasesRepo;
+            }
+        }
+
+        public IGenericRepository<PurchaseItem> PurchaseItems
+        {
+            get
+            {
+                if (purchaseItemsRepo == null)
+                    purchaseItemsRepo = new GenericRepository<PurchaseItem>(_context);
+                return purchaseItemsRepo;
+            }
+        }
+
+        public IGenericRepository<Supplier> Suppliers
+        {
+            get
+            {
+                if (suppliersRepo == null)
+                    suppliersRepo = new GenericRepository<Supplier>(_context);
+                return suppliersRepo;
+            }
+        }
+
+        public IGenericRepository<Payment> Payments
+        {
+            get
+            {
+                if (paymentsRepo == null)
+                    paymentsRepo = new GenericRepository<Payment>(_context);
+                return paymentsRepo;
+            }
+        }
+
+        public IGenericRepository<ApplicationUser> ApplicationUsers
+        {
+            get
+            {
+                if (applicationUsersRepo == null)
+                    applicationUsersRepo = new GenericRepository<ApplicationUser>(_context);
+                return applicationUsersRepo;
+            }
+        }
+
+
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
 
         public void Dispose() => _context.Dispose();
