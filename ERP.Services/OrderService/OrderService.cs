@@ -139,26 +139,33 @@ namespace ERP.Services.OrderService
         }
 
 
-
-
-        // ── UPDATE ─────────────────────────────────────────────
         public async Task UpdateOrderAsync(OrderDetailsViewModel model)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(model.OrderId)
                 ?? throw new Exception($"Order {model.OrderId} not found.");
 
+            if (order.Status == OrderStatus.Completed)
+                throw new Exception("Cannot edit a completed order.");
+
             if (order.Status == OrderStatus.Cancelled)
                 throw new Exception("Cannot edit a cancelled order.");
+
+            if (order.Status != model.Status)
+            {
+                bool isValidTransition = (order.Status, model.Status) switch
+                {
+                    (OrderStatus.Pending, OrderStatus.Completed) => true,
+                    (OrderStatus.Pending, OrderStatus.Cancelled) => true,
+                    _ => false
+                };
+                if (!isValidTransition)
+                    throw new Exception($"Invalid status change from {order.Status} to {model.Status}.");
+            }
 
             if (model.Items == null || !model.Items.Any())
                 throw new Exception("Cannot update an order with no items.");
 
-            //Inventory log
-            await inventoryLogService.CreateInventoryLogAsync(order, true);
-
-            // 1. Restore old stock and remove old items
             var oldItems = await _unitOfWork.OrderItems.FindAsync(oi => oi.OrderId == order.Id);
-
             foreach (var old in oldItems)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(old.ProductId);
@@ -170,9 +177,9 @@ namespace ERP.Services.OrderService
                 _unitOfWork.OrderItems.Delete(old);
             }
 
-            // 2. Add new items and deduct stock
-            decimal total = 0;
+            await inventoryLogService.CreateInventoryLogAsync(order, true);
 
+            decimal total = 0;
             foreach (var item in model.Items)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId)
@@ -195,13 +202,21 @@ namespace ERP.Services.OrderService
                 total += item.Quantity * product.SellingPrice;
             }
 
-            // 3. Update the order — no UpdatedByUserId since model is fixed
             order.TotalAmount = total;
-            order.UpdatedAt = DateTime.Now;
+            order.Status = model.Status;
 
+            // 🔽 NEW: Mark as fully paid when completed
+            if (model.Status == OrderStatus.Completed)
+            {
+                order.PaidAmount = order.TotalAmount;
+                //order.RemainingAmount = 0;
+            }
+
+            order.UpdatedAt = DateTime.Now;
             _unitOfWork.Orders.Update(order);
 
             await _unitOfWork.CompleteAsync();
+
             await inventoryLogService.CreateInventoryLogAsync(order);
         }
 
