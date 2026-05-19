@@ -1,0 +1,138 @@
+﻿@model OrderDetailsViewModel
+@using ERP.Domain.Enums
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+}
+
+<div class="container py-4">
+
+    <!-- Header with breadcrumb -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-receipt me-2 text-primary"></i>Order Details
+        </h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Order" asp-action="Index">Orders</a></li>
+                <li class="breadcrumb-item active">Order #@Model.OrderId</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Main card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <!-- Order Information Section -->
+            <h4 class="fw-bold text-dark mb-3">
+                <i class="bi bi-info-circle me-2 text-primary"></i>Order Information
+            </h4>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-3 text-muted fw-semibold">Order ID</dt>
+                <dd class="col-sm-9">
+                    <code class="text-primary fw-medium">#@Model.OrderId</code>
+                </dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Customer</dt>
+                <dd class="col-sm-9 fw-bold">@Model.CustomerName</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Order Date</dt>
+                <dd class="col-sm-9">@Model.OrderDate.ToString("dd MMM yyyy")</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Status</dt>
+                <dd class="col-sm-9">
+                    <span class="badge @(Model.Status == OrderStatus.Pending ? "bg-warning text-dark" :
+                                        Model.Status == OrderStatus.Completed ? "bg-success" : "bg-danger")">
+                        @Model.Status
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Total Amount</dt>
+                <dd class="col-sm-9 fw-bold text-primary">@Model.TotalAmount.ToString("C")</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Paid Amount</dt>
+                <dd class="col-sm-9 text-success">@Model.PaidAmount.ToString("C")</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Remaining Amount</dt>
+                <dd class="col-sm-9 text-danger fw-semibold">@Model.RemainingAmount.ToString("C")</dd>
+            </dl>
+
+            <hr class="my-4" />
+
+            <!-- Order Items Section -->
+            <h4 class="fw-bold text-dark mb-3">
+                <i class="bi bi-box-seam me-2 text-primary"></i>Order Items
+            </h4>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    @if (Model.Items == null || !Model.Items.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            <p class="mb-0">No items found for this order.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">@item.ProductName</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end text-muted">@item.UnitPrice.ToString("C")</td>
+                                            <td class="text-end fw-semibold">@item.TotalPrice.ToString("C")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Grand Total</td>
+                                        <td class="text-end fw-bold text-primary">@Model.TotalAmount.ToString("C")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons Footer -->
+        <div class="card-footer bg-transparent border-0 px-4 pb-4 pt-0 d-flex gap-2">
+            <a asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Orders
+            </a>
+
+            @if (Model.Status == OrderStatus.Pending)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.OrderId" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit Order
+                </a>
+
+                <form asp-action="Cancel" asp-route-id="@Model.OrderId"
+                      method="post" class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Cancel Order
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

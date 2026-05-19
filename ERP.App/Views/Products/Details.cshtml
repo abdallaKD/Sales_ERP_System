@@ -1,4 +1,4 @@
-﻿@model ERP.Services.ViewModels.ProductViewModel
+﻿@* @model ERP.Services.ViewModels.ProductViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -79,6 +79,428 @@
 </div>
 
 
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script> *@
+
+
+
+
+
+@model ERP.Services.ViewModels.ProductViewModel
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<style>
+    .product-detail-wrapper {
+        font-family: 'DM Sans', 'Segoe UI', sans-serif;
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    .page-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .breadcrumb-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #6b7280;
+        text-decoration: none;
+        padding: 6px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #fff;
+        transition: all 0.15s ease;
+    }
+
+        .breadcrumb-back:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            color: #374151;
+            text-decoration: none;
+        }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        letter-spacing: -0.3px;
+    }
+
+    .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 20px;
+        background: #111827;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+        .btn-edit:hover {
+            background: #1f2937;
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+    .product-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .product-top {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        min-height: 320px;
+    }
+
+    .product-image-panel {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-right: 1px solid #e5e7eb;
+        padding: 2rem;
+        position: relative;
+    }
+
+        .product-image-panel img {
+            max-width: 100%;
+            max-height: 240px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+    .image-placeholder {
+        width: 120px;
+        height: 120px;
+        background: #e5e7eb;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 40px;
+    }
+
+    .product-info-panel {
+        padding: 2rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .product-name {
+        font-size: 26px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.4px;
+        line-height: 1.2;
+    }
+
+    .product-id {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 1.25rem;
+    }
+
+    .badge-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    .badge-sku {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+
+    .badge-category {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .price-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-card {
+        background: #f9fafb;
+        border: 1px solid #f3f4f6;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+
+    .price-card-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 6px;
+    }
+
+    .price-card-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.3px;
+    }
+
+    .price-card.selling .price-card-value {
+        color: #059669;
+    }
+
+    .price-card.stock .price-card-value {
+        color: #d97706;
+    }
+
+    .product-divider {
+        border: none;
+        border-top: 1px solid #f3f4f6;
+        margin: 0;
+    }
+
+    .product-meta-section {
+        padding: 1.75rem 2.5rem;
+    }
+
+    .meta-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 1.25rem;
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+    }
+
+    .meta-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f9fafb;
+    }
+
+        .meta-item:nth-last-child(-n+3) {
+            border-bottom: none;
+        }
+
+    .meta-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 3px;
+    }
+
+    .meta-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .stock-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .stock-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10b981;
+        display: inline-block;
+    }
+
+    @@media (max-width: 768px) {
+        .product-top {
+            grid-template-columns: 1fr;
+        }
+
+        .product-image-panel {
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+            min-height: 200px;
+        }
+
+        .price-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .meta-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .product-info-panel {
+            padding: 1.5rem;
+        }
+
+        .product-meta-section {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="product-detail-wrapper">
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <a asp-action="Index" class="breadcrumb-back">
+                &#8592; Back
+            </a>
+            <h1 class="page-title">Product Details</h1>
+        </div>
+        @Html.ActionLink("Edit Product", "Edit", new { id = Model.Id }, new { @class = "btn-edit" })
+    </div>
+
+    <div class="product-card">
+
+        <div class="product-top">
+
+            <div class="product-image-panel">
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <img src="@Model.Image" alt="@Model.Name" />
+                }
+                else
+                {
+                    <div class="image-placeholder">&#128247;</div>
+                }
+            </div>
+
+            <div class="product-info-panel">
+                <div>
+                    <p class="product-id">ID &nbsp;&#183;&nbsp; #@Model.Id</p>
+                    <h2 class="product-name">@Model.Name</h2>
+
+                    <div class="badge-row">
+                        <span class="badge badge-sku">
+                            SKU &nbsp;@Model.SKU
+                        </span>
+                        @if (!string.IsNullOrEmpty(Model.CategoryName))
+                        {
+                            <span class="badge badge-category">
+                                @Model.CategoryName
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="price-grid">
+                    <div class="price-card selling">
+                        <div class="price-card-label">Selling Price</div>
+                        <div class="price-card-value">@Model.SellingPrice.ToString("C")</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-card-label">Cost Price</div>
+                        <div class="price-card-value">@Model.CostPrice.ToString("C")</div>
+                    </div>
+                    <div class="price-card stock">
+                        <div class="price-card-label">In Stock</div>
+                        <div class="price-card-value">@Model.StockQuantity</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="product-divider" />
+
+        <div class="product-meta-section">
+            <p class="meta-section-title">Product Information</p>
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Product ID</div>
+                    <div class="meta-value">@Html.DisplayFor(model => model.Id)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">SKU</div>
+                    <div class="meta-value">@Html.DisplayFor(model => model.SKU)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Category</div>
+                    <div class="meta-value">@Html.DisplayFor(model => model.CategoryName)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Category ID</div>
+                    <div class="meta-value">@Html.DisplayFor(model => model.CategoryId)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Stock Quantity</div>
+                    <div class="meta-value">
+                        <span class="stock-indicator">
+                            <span class="stock-dot"></span>
+                            @Html.DisplayFor(model => model.StockQuantity) units
+                        </span>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Created At</div>
+                    <div class="meta-value">@Model.CreatedAt.ToString("MMM dd, yyyy")</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>

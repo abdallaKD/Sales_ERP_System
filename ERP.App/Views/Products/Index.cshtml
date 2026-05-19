@@ -1,138 +1,4 @@
-﻿@* @using ERP.Services.ViewModels
-
-@model IEnumerable<ProductViewModel>
-@{
-    ViewData["Title"] = "Index";
-    int i = 1;
-}
-
-
-
-<div class="container">
-
-    <!-- Alert Messages -->
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="mb-5">
-        <a class="btn btn-primary w-25 p-3 border-3" asp-action="Create">+ Add New Product</a>
-    </div>
-
-    <table class="table table-striped">
-        <tr>
-            <th>#</th>
-            <th>Image</th>
-            <th>Name</th>
-            <th>SKU</th>
-            <th>Stock</th>
-            <th>Cost Price</th>
-            <th>Selling Price</th>
-            <th>Created At</th>
-            <th>Category Name</th>
-            <th>Actions</th>
-        </tr>
-
-        @foreach(var item in Model)
-        {
-            <tr>
-                <td>@i</td>
-                <td>
-                     <img src="@item.Image" width="50" /> 
-                </td>
-                <td>@item.Name</td>
-                <td>@item.SKU</td>
-                <td>@item.StockQuantity</td>
-                <td>@item.CostPrice</td>
-                <td>@item.SellingPrice</td>
-                <td>@item.CreatedAt</td>
-                <td>@item.CategoryName</td>
-                <td >
-                    <a asp-action="Details" asp-route-id="@item.Id"
-                       class="btn btn-sm btn-outline-secondary me-1" title="Details">
-                        <i class="bi bi-eye"></i>
-                    </a>
-                    <a asp-action="Edit" asp-route-id="@item.Id"
-                       class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            title="Delete"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteModal"
-                            data-id="@item.Id"
-                            data-name="@item.Name">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>
-
-            i++;
-        }
-
-
-</table>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-2">
-                Are you sure you want to delete <strong id="categoryNameLabel"></strong>?
-                This action cannot be undone.
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" asp-action="Delete" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" id="deleteId" />
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash me-1"></i>Delete
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-@section Scripts {
-    <script>
-        const deleteModal = document.getElementById('deleteModal');
-        deleteModal.addEventListener('show.bs.modal', function (e) {
-            const btn = e.relatedTarget;
-            document.getElementById('deleteId').value = btn.dataset.id;
-            document.getElementById('categoryNameLabel').textContent = btn.dataset.name;
-        });
-    </script>
-}
-
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script> *@
-
-
-
+﻿
 
 @using ERP.Services.ViewModels
 
@@ -142,6 +8,14 @@
     int i = 1;
     const int LowStockThreshold = 10;
     const int MediumStockThreshold = 30;
+
+    // Extract pagination metadata from ViewData
+    int currentPage = Convert.ToInt32(ViewData["CurrentPage"] ?? 1);
+    int totalPages = Convert.ToInt32(ViewData["TotalPages"] ?? 1);
+    int pageSize = Convert.ToInt32(ViewData["PageSize"] ?? 10);
+
+    // Calculate row continuous row counter across different pages
+    int counter = ((currentPage - 1) * pageSize) + 1;
 }
 
 <style>
@@ -649,19 +523,19 @@
     <div class="stats-strip">
         <div class="stat-card">
             <span class="stat-card__label">Total Products</span>
-            <span class="stat-card__val">@total</span>
+            <span class="stat-card__val">@ViewData["totalProducts"]</span>
         </div>
         <div class="stat-card stat-card--danger">
             <span class="stat-card__label">Out of Stock</span>
-            <span class="stat-card__val">@outOfStock</span>
+            <span class="stat-card__val">@ViewData["out"]</span>
         </div>
         <div class="stat-card stat-card--warning">
             <span class="stat-card__label">Low Stock (≤ @LowStockThreshold)</span>
-            <span class="stat-card__val">@lowStock</span>
+            <span class="stat-card__val">@ViewData["low"]</span>
         </div>
         <div class="stat-card stat-card--success">
             <span class="stat-card__label">Well Stocked (> @MediumStockThreshold)</span>
-            <span class="stat-card__val">@goodStock</span>
+            <span class="stat-card__val">@ViewData["good"]</span>
         </div>
     </div>
 
@@ -731,7 +605,7 @@
                         data-category="@item.CategoryName?.ToLower()"
                         data-stock-level="@(item.StockQuantity == 0 ? "out" : item.StockQuantity <= LowStockThreshold ? "low" : item.StockQuantity <= MediumStockThreshold ? "medium" : "good")">
 
-                        <td><span class="row-num">@i</span></td>
+                        <td><span class="row-num">@(counter++)</span></td>
 
                         <td>
                             @if (!string.IsNullOrEmpty(item.Image))
@@ -805,6 +679,39 @@
             <i class="bi bi-box-seam d-block"></i>
             <p>No products match your search or filter.</p>
         </div>
+
+        @if (totalPages > 1)
+        {
+            <div class=" me-5 card-footer bg-white border-0 d-flex justify-content-between align-items-center py-3">
+                <div class="text-muted small ms-4">
+                    Showing page <strong>@currentPage</strong> of @totalPages
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(currentPage - 1)"
+                                       class="page-link">Previous</a>
+                        </li>
+
+                        @for (int j = 1; j <= totalPages; j++)
+                        {
+                            <li class="page-item @(j == currentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageNumber="@j">@j</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(currentPage + 1)">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+
+
     </div>
 </div>
 

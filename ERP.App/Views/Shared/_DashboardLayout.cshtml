@@ -1,130 +1,363 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+    @* @{ 
+        var currentFilter = ViewData["CurrentFilter"] as string ?? "";
+    } *@
 
 <head>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
+    <meta name="description" content="Sales ERP System">
     <meta name="author" content="">
 
-    <title>@ViewData["Title"] - SB Admin 2</title>
+    <title>@ViewData["Title"] - Sales ERP</title>
 
-    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
           rel="stylesheet">
 
+    <!-- FontAwesome -->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+    <!-- SB Admin 2 Core CSS -->
     <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ERP.App.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+
+
+
+    <!-- ERP Custom Overrides -->
+    <style>
+        /* ── Brand & Sidebar ───────────────────────────────────────────── */
+        :root {
+            --erp-primary:   #4e73df;
+            --erp-secondary: #858796;
+            --erp-success:   #1cc88a;
+            --erp-info:      #36b9cc;
+            --erp-warning:   #f6c23e;
+            --erp-danger:    #e74a3b;
+            --erp-dark:      #2d3748;
+            --erp-sidebar:   #1a202c;
+        }
+
+        body {
+            background-color: #f8f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        #content-wrapper {
+            min-height: 100vh;
+            background-color: #f8f9fc;
+        }
+
+        /* Sidebar brand strip */
+        .sidebar-brand {
+            background: rgba(255, 255, 255, 0.06) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1.5rem 1rem !important;
+        }
+
+        .sidebar-brand-text {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+
+        /* Active nav item pill */
+        .sidebar .nav-item .nav-link.active {
+            background: rgba(78, 115, 223, 0.18);
+            border-left: 3px solid var(--erp-primary);
+            border-radius: 0 6px 6px 0;
+            color: #fff !important;
+        }
+
+        .sidebar .nav-item .nav-link {
+            transition: background 0.2s ease, color 0.2s ease;
+            border-left: 3px solid transparent;
+            border-radius: 0 6px 6px 0;
+            padding: 0.85rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar .nav-item .nav-link:hover {
+            background: rgba(255,255,255,0.07);
+            color: #fff !important;
+        }
+
+        .sidebar .nav-item .nav-link i {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Divider labels */
+        .sidebar-heading {
+            font-size: 0.65rem;
+            letter-spacing: 0.13em;
+            font-weight: 700;
+            opacity: 0.45;
+            padding: 0.5rem 1rem 0.25rem;
+        }
+
+        /* Topbar polish */
+        .topbar {
+            border-bottom: 1px solid #e8ecf0 !important;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06) !important;
+        }
+
+        .navbar-search .form-control {
+            border-radius: 8px 0 0 8px !important;
+            background: #f4f6fc !important;
+            font-size: 0.82rem;
+        }
+
+        .navbar-search .btn {
+            border-radius: 0 8px 8px 0 !important;
+        }
+
+        /* Avatar initials fallback */
+        .avatar-initials {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--erp-primary);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb-wrapper {
+            padding: 0.75rem 0 1.25rem;
+        }
+
+        .breadcrumb-wrapper h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.78rem;
+        }
+
+        .breadcrumb-item a {
+            color: var(--erp-primary);
+            text-decoration: none;
+        }
+
+        /* Cards */
+        .card {
+            border: none !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
+        }
+
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            border-bottom: 1px solid #f0f2f8 !important;
+            background: #fff !important;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #2d3748;
+            padding: 1rem 1.25rem;
+        }
+
+        /* Scroll-to-top */
+        /* .scroll-to-top {
+            background: var(--erp-primary) !important;
+            box-shadow: 0 4px 12px rgba(78,115,223,0.4) !important;
+        } */
+
+        /* Logout modal */
+        .modal-content {
+            border-radius: 12px !important;
+            border: none !important;
+        }
+
+        /* Global content padding */
+        #content .container-fluid {
+            padding: 0 1.5rem 2rem;
+        }
+
+        /* Alert auto-dismiss animation */
+        .alert {
+            border-radius: 10px !important;
+            border: none !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
 
 </head>
 
 <body id="page-top">
 
+    <!-- ══════════════════════════════════════════════
+         PAGE WRAPPER
+    ══════════════════════════════════════════════ -->
     <div id="wrapper">
 
+        <!-- ══════════════════════════════════════════
+             SIDEBAR
+        ══════════════════════════════════════════ -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Home" asp-action="Index">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+            <!-- Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center"
+               asp-controller="Home" asp-action="Index">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">Sales <span style="opacity:.6;font-weight:300">ERP</span></div>
             </a>
 
             <hr class="sidebar-divider my-0">
 
+            <!-- Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                   asp-controller="Home" asp-action="Index">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">Catalog</div>
 
+            <!-- Categories -->
             <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller=""
-                   asp-action="Index">
-
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "active" : "")"
+                   asp-controller="Categories" asp-action="Index">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Category</span>
+                    <span>Categories</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller=""
-                   asp-action="Index">
 
+            <!-- Products -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")"
+                   asp-controller="Products" asp-action="Index">
                     <i class="fas fa-fw fa-box"></i>
                     <span>Products</span>
                 </a>
             </li>
+
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">Sales</div>
+
+            <!-- Customers -->
             <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller=""
-                   asp-action="Index">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customers" ? "active" : "")"
+                   asp-controller="Customer" asp-action="Index">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Customers</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller=""
-                   asp-action="Index">
 
+            <!-- Orders -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active" : "")"
+                   asp-controller="Orders" asp-action="Index">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <!-- Payments -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payment" ? "active" : "")"
+                   asp-controller="Payment" asp-action="Index">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Payments</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">Warehouse</div>
+
+            <!-- Suppliers -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Suppliers" ? "active" : "")"
+                   asp-controller="Suppliers" asp-action="Index">
+                    <i class="fas fa-fw fa-truck"></i>
+                    <span>Suppliers</span>
+                </a>
+            </li>
+
+            <!-- Purchases -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Purchases" ? "active" : "")"
+                   asp-controller="Purchase" asp-action="Index">
+                    <i class="fas fa-fw fa-file-invoice-dollar"></i>
+                    <span>Purchase</span>
+                </a>
+            </li>
+
+            <!-- Inventory Log -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "InventoryLogs" ? "active" : "")"
+                   asp-controller="InventoryLog" asp-action="Index">
                     <i class="fas fa-fw fa-clipboard-list"></i>
-                    <span> InventoryLog</span>
+                    <span>Inventory Log</span>
                 </a>
             </li>
 
-            
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">System</div>
 
-
-
-            <li class="nav-item active">
-                <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true"
-                   aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
-                </a>
-            </li>
-
+            <!-- Users -->
             <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="Charts">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="Tables">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")"
+                   asp-controller="Account" asp-action="Users">
+                    <i class="fas fa-fw fa-user-cog"></i>
+                    <span>Users</span>
                 </a>
             </li>
 
             <hr class="sidebar-divider d-none d-md-block">
 
+            <!-- Sidebar Toggle Button -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
         </ul>
+        <!-- End Sidebar -->
+        <!-- ══════════════════════════════════════════
+             CONTENT WRAPPER
+        ══════════════════════════════════════════ -->
         <div id="content-wrapper" class="d-flex flex-column">
-
             <div id="content">
 
+                <!-- ── TOPBAR ─────────────────────────────────────────── -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
+                    <!-- Mobile sidebar toggle -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
 
+                    <!-- Search (desktop) -->
                     <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                   aria-label="Search" aria-describedby="basic-addon2">
+                            <input type="text" class="form-control bg-light border-0 small"
+                                   placeholder="Search..." aria-label="Search">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
                                     <i class="fas fa-search fa-sm"></i>
@@ -132,12 +365,25 @@
                             </div>
                         </div>
                     </form>
+                    @* <form asp-action="Index" method="get" class="d-flex border rounded bg-white p-1 shadow-sm">
+                        <input type="text" name="searchString" value="@currentFilter" class="form-control border-0 bg-transparent form-control-sm me-2" style="min-width: 220px;" placeholder="Search ..." />
+                        @if (!string.IsNullOrEmpty(currentFilter))
+                        {
+                            <a asp-action="Index" class="btn btn-sm btn-light border-0 me-1" title="Clear Search">
+                                <i class="bi bi-x-lg text-muted"></i>
+                            </a>
+                        }
+                        <button type="submit" class="btn btn-sm btn-primary px-3">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form> *@
 
                     <ul class="navbar-nav ml-auto">
 
+                        <!-- Mobile Search -->
                         <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown"
+                               role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-search fa-fw"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
@@ -145,8 +391,7 @@
                                 <form class="form-inline mr-auto w-100 navbar-search">
                                     <div class="input-group">
                                         <input type="text" class="form-control bg-light border-0 small"
-                                               placeholder="Search for..." aria-label="Search"
-                                               aria-describedby="basic-addon2">
+                                               placeholder="Search..." aria-label="Search">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="button">
                                                 <i class="fas fa-search fa-sm"></i>
@@ -159,16 +404,20 @@
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
+                        <!-- User Dropdown -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                     src="~/img/undraw_profile.svg">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown"
+                               role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    @User.Identity?.Name
+                                </span>
+                                <div class="avatar-initials">
+                                    @(User.Identity?.Name?.Length > 0 ? User.Identity.Name[0].ToString().ToUpper() : "U")
+                                </div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                  aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -181,54 +430,155 @@
                         </li>
 
                     </ul>
-
                 </nav>
+                <!-- End Topbar -->
+                <!-- ── PAGE CONTENT ──────────────────────────────────── -->
                 <div class="container-fluid">
+
+                    <!-- Breadcrumb -->
+                    @if (ViewData["PageTitle"] != null || ViewData["BreadcrumbItems"] != null)
+                    {
+                        <div class="breadcrumb-wrapper d-sm-flex align-items-center justify-content-between mb-2">
+                            <h1 class="h4 mb-0">@ViewData["PageTitle"]</h1>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item">
+                                        <a asp-controller="Home" asp-action="Index">
+                                            <i class="fas fa-home fa-xs mr-1"></i>Home
+                                        </a>
+                                    </li>
+                                    @if (ViewData["BreadcrumbItems"] is IEnumerable<(string Label, string Url)> items)
+                                    {
+                                        foreach (var item in items)
+                                        {
+                                            if (string.IsNullOrEmpty(item.Url))
+                                            {
+                                                <li class="breadcrumb-item active" aria-current="page">@item.Label</li>
+                                            }
+                                            else
+                                            {
+                                                <li class="breadcrumb-item"><a href="@item.Url">@item.Label</a></li>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <li class="breadcrumb-item active" aria-current="page">@ViewData["PageTitle"]</li>
+                                    }
+                                </ol>
+                            </nav>
+                        </div>
+                    }
+
+                    <!-- TempData Alerts -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle mr-2"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                    @if (TempData["InfoMessage"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-info-circle mr-2"></i> @TempData["InfoMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- ★ VIEW CONTENT RENDERS HERE ★ -->
                     @RenderBody()
+
                 </div>
+                <!-- End Page Content -->
+
             </div>
+            <!-- End Content -->
 
         </div>
-    </div>
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+        <!-- End Content Wrapper -->
 
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    </div>
+    <!-- End Wrapper -->
+    <!-- Scroll To Top -->
+    @* <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a> *@
+
+    <!-- ══════════════════════════════════════════════
+         LOGOUT MODAL
+    ══════════════════════════════════════════════ -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog"
+         aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title font-weight-bold" id="logoutModalLabel">
+                        <i class="fas fa-sign-out-alt mr-2 text-danger"></i>Ready to Leave?
+                    </h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" asp-controller="Account" asp-action="Logout">Logout</a>
+                <div class="modal-body text-gray-600 small">
+                    Select <strong>"Logout"</strong> below if you are ready to end your current session.
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-sm btn-light" type="button" data-dismiss="modal">
+                        Cancel
+                    </button>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════
+         SCRIPTS
+    ══════════════════════════════════════════════ -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/vendor/jquery/jquery.min.js"></script>
     <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
     <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
-
     <script src="~/js/sb-admin-2.min.js"></script>
 
+    <!-- jQuery Validation -->
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
+    <!-- Chart.js (available on any page that needs it) -->
     <script src="~/vendor/chart.js/Chart.min.js"></script>
-    <script src="~/js/demo/chart-area-demo.js"></script>
-    <script src="~/js/demo/chart-pie-demo.js"></script>
+
+    <!-- Auto-dismiss alerts after 5s -->
+    <script>
+        $(function () {
+            setTimeout(function () {
+                $('.alert.alert-success, .alert.alert-info').alert('close');
+            }, 5000);
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
-
 </html>

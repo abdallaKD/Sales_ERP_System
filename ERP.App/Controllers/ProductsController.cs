@@ -23,9 +23,26 @@ namespace ERP.App.Controllers
             this.categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 1)
         {
-            var VM = await productService.GetAllProductsWithCategoryName();
+            var VM = await productService.GetAllProductsWithCategoryName(pageNumber);
+
+            int pageSize = 5;
+            int totalItems = (await productService.GetAllProductsAsync()).Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+            var Allproducts = await productService.GetAllProductsAsync();
+            ViewData["totalProducts"] = Allproducts.Count();
+            ViewData["out"] = Allproducts.Where(p => p.StockQuantity <= 0).Count(); ;
+            ViewData["low"] = Allproducts.Where(p => p.StockQuantity > 0 && p.StockQuantity <= 10).Count();
+            ViewData["mid"] = Allproducts.Where(p => p.StockQuantity > 10 && p.StockQuantity <= 30).Count();
+            ViewData["good"] = Allproducts.Where(p => p.StockQuantity > 30).Count();
+
+
+
             return View("Index", VM);
         }
 

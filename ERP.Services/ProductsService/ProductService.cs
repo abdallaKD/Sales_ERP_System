@@ -27,7 +27,7 @@ namespace ERP.Services.ProductsService
 
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            return await unitOfWork.Products.GetAllAsync(p => p.Id);
+            return await unitOfWork.Products.GetAllAsync();
         }
 
         public async Task<Product?> GetProductByIdAsync(int id)
@@ -67,11 +67,23 @@ namespace ERP.Services.ProductsService
             return await unitOfWork.CompleteAsync() > 0;
         }
 
-        public async Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoryName()
+        public async Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoryName(int pageNumber = 1)
         {
             var products = await unitOfWork.Products.GetAllAsync(p => p.Category);
 
-            return products.Select(p => new ProductViewModel
+            int pageSize = 5;
+            int totalItems = products.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var pagedProducts = products
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return pagedProducts.Select(p => new ProductViewModel
             {
                 Id = p.Id,
                 Name = p.Name,

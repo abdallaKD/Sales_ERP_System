@@ -16,10 +16,10 @@ namespace ERP.App.Controllers
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            //if (User.Identity?.IsAuthenticated == true)
-            //    return RedirectToAction("Index", "Home");
+            if (User.Identity?.IsAuthenticated == true)
+                return RedirectToAction("Index", "Home");
 
-            //ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
             return View("Login");
         }
 
@@ -27,7 +27,7 @@ namespace ERP.App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LoginAsync(LoginViewModel model, string? returnUrl = null)
         {
-            //ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
 
             if (!ModelState.IsValid)
                 return View("Login", model);
@@ -36,8 +36,8 @@ namespace ERP.App.Controllers
 
             if (result.Succeeded)
             {
-                //if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                //    return Redirect(returnUrl);
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -61,10 +61,38 @@ namespace ERP.App.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UsersAsync()
+        public async Task<IActionResult> UsersAsync(string? searchString, int pageNumber = 1)
         {
             var users = await _authService.GetAllUsersAsync();
-            return View(users);
+
+            // ── Search
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                users = users.Where(u =>
+                    u.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    u.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // ── Pagination
+            int pageSize = 10;
+            int totalItems = users.Count;
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var paged = users
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View(paged);
         }
 
         [HttpGet]
@@ -137,9 +165,9 @@ namespace ERP.App.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ChangePasswordAsync(string id)
+        public async Task<IActionResult> ChangePasswordAsync(string userId)
         {
-            ChangePasswordViewModel model = new ChangePasswordViewModel() { UserId = id };
+            ChangePasswordViewModel model = new ChangePasswordViewModel() { UserId = userId };
             return View(model);
         }
 
