@@ -1,100 +1,173 @@
 ﻿@using ERP.Services.ViewModels
 @using ERP.Domain.Enums
-
 @model PurchaseViewModel
 @{
     ViewData["Title"] = "Edit Purchase";
 }
 
-<style>
-    @@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+<div class="container-fluid px-4 py-3">
 
-    :root {
-        --bg-page: #f0f2f7;
-        --bg-card: #ffffff;
-        --border: #e2e6f0;
-        --text-primary: #1a1e2e;
-        --text-muted: #6b7394;
-        --accent: #3d5cff;
-        --radius: 10px;
-        --shadow: 0 2px 12px rgba(61,92,255,.07);
-        --sans: 'DM Sans', sans-serif;
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="mb-1 fw-bold text-dark">
+            <i class="bi bi-pencil-square me-2 text-primary"></i>Edit Purchase #@Model.Id
+        </h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">Purchases</a></li>
+                <li class="breadcrumb-item active">Edit</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Please correct the following errors:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
 
-    body { font-family: var(--sans); background: var(--bg-page); }
-    .edit-page { padding: 2rem 1.5rem 3rem; max-width: 900px; margin: auto; }
-    .card-shell { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; margin-bottom: 1.5rem; }
-    .section-title { font-size: 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
-    .back-btn { color: var(--text-muted); text-decoration: none; font-size: .9rem; display: inline-flex; align-items: center; gap: .4rem; margin-bottom: 1.25rem; }
-    .back-btn:hover { color: var(--accent); }
-</style>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
 
-<div class="edit-page">
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
 
-    <a asp-action="Index" class="back-btn"><i class="bi bi-arrow-left"></i> Back to Purchases</a>
+                <!-- Purchase Info -->
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Purchase Information
+                </h5>
 
-    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
-        @Html.AntiForgeryToken()
-
-        <div class="card-shell">
-            <div class="section-title">Edit Purchase #@Model.Id</div>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Supplier</label>
-                    <select name="SupplierId" class="form-select" required>
-                        <option value="">-- Select Supplier --</option>
-                        @foreach (var supplier in Model.Suppliers)
-                        {
-                            if (supplier.Name == Model.SupplierName)
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Supplier</label>
+                        <select name="SupplierId" class="form-select" required>
+                            <option value="">-- Select Supplier --</option>
+                            @foreach (var supplier in Model.Suppliers)
                             {
-                                <option value="@supplier.Id" selected>@supplier.Name</option>
+                                if (supplier.Name == Model.SupplierName)
+                                {
+                                    <option value="@supplier.Id" selected>@supplier.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@supplier.Id">@supplier.Name</option>
+                                }
                             }
-                            else
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select name="Status" class="form-select" required>
+                            @foreach (var status in Enum.GetValues<PurchaseStatus>())
                             {
-                                <option value="@supplier.Id">@supplier.Name</option>
+                                if (status.ToString() == Model.Status)
+                                {
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
                             }
-                        }
-                    </select>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Purchase Date</label>
-                    <input type="datetime-local" name="PurchaseDate" class="form-control"
-                           value="@Model.PurchaseDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                <hr class="my-4" />
+
+                <!-- Purchase Items -->
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-box-seam me-2 text-primary"></i>Purchase Items
+                </h5>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th style="width:160px" class="text-center">Quantity</th>
+                                        <th style="width:180px" class="text-center">Unit Cost</th>
+                                        <th style="width:150px" class="text-center">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.PurchaseItems.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="hidden"
+                                                       name="PurchaseItems[@i].ProductId"
+                                                       value="@Model.PurchaseItems[i].ProductId" />
+                                                <span class="fw-semibold">
+                                                    @(Model.PurchaseItems[i].Product?.Name ?? "Product #" + Model.PurchaseItems[i].ProductId)
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       name="PurchaseItems[@i].Quantity"
+                                                       class="form-control text-center"
+                                                       value="@Model.PurchaseItems[i].Quantity"
+                                                       min="1" required />
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       name="PurchaseItems[@i].UnitCost"
+                                                       class="form-control text-center"
+                                                       value="@Model.PurchaseItems[i].UnitCost"
+                                                       min="0" step="0.01" required />
+                                            </td>
+                                            <td class="text-center text-muted fw-semibold">
+                                                @((Model.PurchaseItems[i].Quantity * Model.PurchaseItems[i].UnitCost).ToString("C"))
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total Amount</td>
+                                        <td class="text-center fw-bold text-primary">
+                                            @Model.PurchaseItems.Sum(i => i.Quantity * i.UnitCost).ToString("C")
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Status</label>
-                    <select name="Status" class="form-select" required>
-                        @foreach (var status in Enum.GetValues<PurchaseStatus>())
-                        {
-                            if (status.ToString() == Model.Status)
-                            {
-                                <option value="@status" selected>@status</option>
-                            }
-                            else
-                            {
-                                <option value="@status">@status</option>
-                            }
-                        }
-                    </select>
+                <hr class="my-4" />
+
+                <!-- Actions -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i> Save Changes
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Cancel
+                    </a>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Total Amount</label>
-                    <input type="number" name="TotalAmount" class="form-control"
-                           value="@Model.TotalAmount" min="0" step="0.01" required />
-                </div>
-            </div>
+            </form>
         </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary px-4">
-                <i class="bi bi-check-lg me-1"></i> Save Changes
-            </button>
-            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
-        </div>
-
-    </form>
+    </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

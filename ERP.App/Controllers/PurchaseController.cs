@@ -17,10 +17,35 @@ namespace ERP.App.Controllers
             this.purchaseService = purchaseService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString, int pageNumber = 1)
         {
             var purchases = await purchaseService.GetAllPurchasesAsync();
-            return View("Index", purchases);
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                purchases = purchases.Where(p =>
+                    (p.Supplier?.Name ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            int pageSize = 10;
+            int totalItems = purchases.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            if (totalPages > 0 && pageNumber > totalPages) pageNumber = totalPages;
+
+            var paged = purchases
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+
+            return View("Index", paged);
         }
 
 
@@ -54,11 +79,13 @@ namespace ERP.App.Controllers
                 return View("Create", vm);
             }
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
             var purchase = new Purchase
             {
                 SupplierId = vm.SupplierId,
                 PurchaseDate = vm.PurchaseDate,
                 Status = PurchaseStatus.Pending,
+                CreatedByUserId = userId
             };
 
             var items = vm.PurchaseItems.Select(i => new PurchaseItem
@@ -95,21 +122,99 @@ namespace ERP.App.Controllers
         }
 
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, PurchaseViewModel vm)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return View("Edit", vm);
+
+        //    var purchase = new Purchase
+        //    {
+        //        Id = id,
+        //        SupplierId = vm.SupplierId,
+        //        PurchaseDate = vm.PurchaseDate,
+        //        Status = Enum.Parse<PurchaseStatus>(vm.Status),
+        //        TotalAmount = vm.TotalAmount,
+        //        CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ""
+        //    };
+
+        //    try
+        //    {
+        //        await purchaseService.UpdatePurchaseAsync(purchase);
+        //        TempData["Success"] = "Purchase updated successfully!";
+        //        return RedirectToAction("Index");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["Error"] = ex.Message;
+        //        return View("Edit", vm);
+        //    }
+        //}
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, PurchaseViewModel vm)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        vm.Suppliers = await purchaseService.GetAllSuppliersAsync();
+        //        vm.Products = await purchaseService.GetAllProductsAsync();
+        //        return View("Edit", vm);
+        //    }
+
+        //    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+
+        //    var purchase = new Purchase
+        //    {
+        //        Id = id,
+        //        SupplierId = vm.SupplierId,
+        //        PurchaseDate = vm.PurchaseDate,
+        //        Status = Enum.Parse<PurchaseStatus>(vm.Status),
+        //        TotalAmount = vm.TotalAmount,
+        //        CreatedByUserId = userId
+        //    };
+
+        //    try
+        //    {
+        //        await purchaseService.UpdatePurchaseAsync(purchase);
+        //        TempData["Success"] = "Purchase updated successfully!";
+        //        return RedirectToAction("Index");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["Error"] = ex.Message;
+        //        vm.Suppliers = await purchaseService.GetAllSuppliersAsync();
+        //        vm.Products = await purchaseService.GetAllProductsAsync();
+        //        return View("Edit", vm);
+        //    }
+        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PurchaseViewModel vm)
         {
             if (!ModelState.IsValid)
+            {
+                vm.Suppliers = await purchaseService.GetAllSuppliersAsync();
+                vm.Products = await purchaseService.GetAllProductsAsync();
                 return View("Edit", vm);
+            }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            var items = vm.PurchaseItems?.Select(i => new PurchaseItem
+            {
+                ProductId = i.ProductId,
+                Quantity = i.Quantity,
+                UnitCost = i.UnitCost
+            }).ToList() ?? new();
 
             var purchase = new Purchase
             {
                 Id = id,
                 SupplierId = vm.SupplierId,
-                PurchaseDate = vm.PurchaseDate,
                 Status = Enum.Parse<PurchaseStatus>(vm.Status),
-                TotalAmount = vm.TotalAmount,
-                CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ""
+                CreatedByUserId = userId,
+                PurchaseDetails = items
             };
 
             try
@@ -121,6 +226,8 @@ namespace ERP.App.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
+                vm.Suppliers = await purchaseService.GetAllSuppliersAsync();
+                vm.Products = await purchaseService.GetAllProductsAsync();
                 return View("Edit", vm);
             }
         }

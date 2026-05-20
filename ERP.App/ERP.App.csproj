@@ -27,4 +27,8 @@
     <ProjectReference Include="..\ERP.Services\ERP.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\Products\" />
+  </ItemGroup>
+
 </Project>
