@@ -62,5 +62,3 @@ The project is structured in 4 independent layers, each depending only inward:
 
 ---
 
-[GitHub](https://github.com/abdallaKD)
-
